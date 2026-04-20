@@ -2,8 +2,10 @@
 #   .github/workflows/notify-docker-release.yml
 #
 # Prerequisites:
-#   A PAT with actions:write permission on humhub/docker must be stored
-#   as secret DOCKER_REPO_DISPATCH_TOKEN in humhub/humhub.
+#   A GitHub App installed on humhub/docker with Actions: read and write permission.
+#   Store the following as secrets in humhub/humhub:
+#     APP_ID          — the GitHub App's numeric App ID
+#     APP_PRIVATE_KEY — the GitHub App's private key (.pem contents)
 name: Notify Docker Repo on Release
 on:
   release:
@@ -13,10 +15,19 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+    - name: Generate GitHub App token
+      id: app-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+        owner: humhub
+        repositories: docker
+
     - name: Send repository_dispatch to humhub/docker
       run: |
         curl --fail --show-error -X POST \
-          -H "Authorization: Bearer ${{ secrets.DOCKER_REPO_DISPATCH_TOKEN }}" \
+          -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "https://api.github.com/repos/humhub/docker/dispatches" \

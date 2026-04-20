@@ -166,8 +166,13 @@ humhub/docker
     docker-publish-release.yml ← all branches; reusable release build logic
 ```
 
-A PAT with `actions: write` permission on `humhub/docker` must be stored as a secret
-(e.g. `DOCKER_REPO_DISPATCH_TOKEN`) in `humhub/humhub`.
+A GitHub App with **Actions: read and write** permission, installed on `humhub/docker`, is used
+to generate short-lived tokens at runtime. Store the following as secrets in `humhub/humhub`:
+
+| Secret | Value |
+|---|---|
+| `APP_ID` | The GitHub App's numeric App ID |
+| `APP_PRIVATE_KEY` | The GitHub App's private key (`.pem` file contents) |
 
 ### Docker Repo Branch Selection
 
