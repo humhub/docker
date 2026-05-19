@@ -1,6 +1,10 @@
 Changelog
 =========
 
+May 19, 2026
+--------------
+- Added docker hub overview page
+
 April 17, 2026
 --------------
 - Introduced automated docker beta builds on humhub releases
