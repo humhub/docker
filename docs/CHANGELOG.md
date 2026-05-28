@@ -1,6 +1,10 @@
 Changelog
 =========
 
+May 28, 2026
+--------------
+- Remove default theme from themes folder (deprecated since HumHub v1.19)
+
 April 17, 2026
 --------------
 - Introduced automated docker beta builds on humhub releases
