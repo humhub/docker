@@ -1,6 +1,10 @@
 Changelog
 =========
 
+May 28, 2026
+------------
+- Added APCu PHP extension to runtime image
+
 April 17, 2026
 --------------
 - Introduced automated docker beta builds on humhub releases
