@@ -38,7 +38,8 @@ RUN install-php-extensions \
 	imagick \
 	ldap \
 	zip \
-	opcache
+	opcache \
+	apcu
 
 COPY --from=builder /opt/humhub /opt/humhub
 
