@@ -4,6 +4,7 @@ Changelog
 May 28, 2026
 ------------
 - Added APCu PHP extension to runtime image
+- Added docker hub overview page
 
 April 17, 2026
 --------------
