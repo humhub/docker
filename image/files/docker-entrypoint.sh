@@ -39,7 +39,11 @@ mkdir -p /data/{uploads,assets,logs,config,modules,modules-custom,themes,caddy}
 #--- Copy defaults (if not exist) to mounted data folder
 cp -rn /opt/humhub/protected/config/ /data/
 cp -rn /opt/humhub/uploads/ /data/
-rm -rf /data/themes/HumHub && cp -rf /opt/humhub/themes/HumHub /data/themes/HumHub
+
+# Since HumHub v1.19, the default theme is no longer located in the themes folder.
+# The themes folder is now reserved for custom themes only.
+# Remove the default theme if it still exists (e.g. after an upgrade from an older version).
+rm -rf /data/themes/HumHub
 
 #--- Check Permissions
 chown -R www-data:www-data /app/runtime
