@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Jun 09, 2026
+--------------
+- Better handle module migrations on core upgrades
+
 May 28, 2026
 --------------
 - Remove default theme from themes folder (deprecated since HumHub v1.19)
