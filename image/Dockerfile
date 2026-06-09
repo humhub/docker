@@ -1,7 +1,7 @@
 # ======================================
 # Stage 1: Build HumHub
 # ======================================
-FROM debian:bookworm AS builder
+FROM --platform=$BUILDPLATFORM debian:bookworm AS builder
 
 ARG HUMHUB_GIT_BRANCH="develop"
 
