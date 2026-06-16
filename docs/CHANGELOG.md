@@ -9,6 +9,7 @@ May 28, 2026
 --------------
 - Remove default theme from themes folder (deprecated since HumHub v1.19)
 - Added APCu PHP extension to runtime image
+- Added docker hub overview page
 
 April 17, 2026
 --------------
