@@ -32,21 +32,35 @@ jobs:
           *)       TAG="${REF#v}-nightly";     HUMHUB_BRANCH="$REF" ;;
         esac
 
-        # Manual dispatch may pick the platforms explicitly. The cron / workflow_call
-        # path supplies no such input, so fall back to the ref gate: only develop
-        # (experimental-nightly) is multiarch; every other ref stays amd64-only.
+        # Canonical platform set per ref (what the automated nightly builds):
+        # only develop (experimental-nightly) is multiarch; every other ref is amd64.
+        case "$REF" in
+          develop) CANONICAL="linux/amd64,linux/arm64" ;;
+          *)       CANONICAL="linux/amd64" ;;
+        esac
+
+        # Manual dispatch may narrow the platforms; the cron / workflow_call path
+        # supplies no input and uses the canonical set.
         PLATFORMS="${{ inputs.platforms }}"
         if [ -z "$PLATFORMS" ]; then
-          case "$REF" in
-            develop) PLATFORMS="linux/amd64,linux/arm64" ;;
-            *)       PLATFORMS="linux/amd64" ;;
-          esac
+          PLATFORMS="$CANONICAL"
+        fi
+
+        # The rolling channel tag (e.g. experimental-nightly) only moves for a full
+        # canonical build. A manual run that narrows the platform set (amd64-only or
+        # arm64-only) is a test: it publishes the immutable tag only and must not
+        # clobber the shared tag with a partial image.
+        if [ "$PLATFORMS" = "$CANONICAL" ]; then
+          PUSH_ROLLING="true"
+        else
+          PUSH_ROLLING="false"
         fi
 
         echo "ref=$REF"                     >> $GITHUB_OUTPUT
         echo "tag=$TAG"                     >> $GITHUB_OUTPUT
         echo "humhub_branch=$HUMHUB_BRANCH" >> $GITHUB_OUTPUT
         echo "platforms=$PLATFORMS"         >> $GITHUB_OUTPUT
+        echo "push_rolling=$PUSH_ROLLING"   >> $GITHUB_OUTPUT
 
     - uses: actions/checkout@v4
       with:
@@ -78,8 +92,9 @@ jobs:
         file: ./image/Dockerfile
         platforms: ${{ steps.resolve.outputs.platforms }}
         push: true
+        provenance: false
         build-args: |
           HUMHUB_GIT_BRANCH=${{ steps.resolve.outputs.humhub_branch }}
         tags: |
-          humhub/humhub:${{ steps.resolve.outputs.tag }}
           humhub/humhub:${{ steps.immutable.outputs.value }}
+          ${{ steps.resolve.outputs.push_rolling == 'true' && format('humhub/humhub:{0}', steps.resolve.outputs.tag) || '' }}
