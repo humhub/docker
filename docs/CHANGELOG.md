@@ -5,10 +5,15 @@ June 16, 2026
 --------------
 - Added experimental linux/arm64 multiarch support to nightly develop builds via buildx
 
+Jun 09, 2026
+--------------
+- Better handle module migrations on core upgrades
+
 May 28, 2026
 --------------
 - Remove default theme from themes folder (deprecated since HumHub v1.19)
 - Added APCu PHP extension to runtime image
+- Added docker hub overview page
 
 April 17, 2026
 --------------

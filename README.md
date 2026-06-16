@@ -3,8 +3,6 @@
 A ready-to-use Docker image for [HumHub](https://www.humhub.org) – the flexible open-source social networking platform.  
 This image provides everything you need to run HumHub in a modern, containerized environment.
 
-> **Important:**  
-> This is still work in progress. Please try out our nightly builds. If you are planning to use it in a production environment, please be patient until stable releases for each version are available.  
 
 ---
 
