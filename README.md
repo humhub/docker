@@ -98,6 +98,7 @@ Your instance installer will be available at:
 - [Running Without Docker Compose](docs/manual-run.md)
 - [Redis Integration](docs/redis.md)
 - [Custom TLS Settings](docs/custom-tls.md)
+- [Custom robots.txt](docs/robots-txt.md)
 
 
 
