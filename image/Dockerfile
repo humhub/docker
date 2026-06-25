@@ -39,9 +39,15 @@ RUN install-php-extensions \
 	ldap \
 	zip \
 	opcache \
-	apcu
+	apcu \
+	gmp
 
 COPY --from=builder /opt/humhub /opt/humhub
+
+# --- Image-managed config (env-driven OIDC support, see docs/oidc.md) ---
+# Replaces HumHub's empty default common.php. It is copied to /data/config on
+# first start and refreshed on every start by docker-entrypoint.sh.
+COPY files/config/common.php /opt/humhub/protected/config/common.php
 
 # --- Supervisor config ---
 COPY files/supervisord.conf /etc/supervisor/conf.d/humhub.conf

@@ -45,6 +45,13 @@ cp -rn /opt/humhub/uploads/ /data/
 # Remove the default theme if it still exists (e.g. after an upgrade from an older version).
 rm -rf /data/themes/HumHub
 
+#--- Refresh the image-managed common.php (carries env-driven OIDC support).
+#    Only overwrite it when it is missing or still image-managed, so any user
+#    customisation (marker removed, or own common.local.php) is preserved.
+if [ ! -f /data/config/common.php ] || grep -q "@humhub-docker:managed" /data/config/common.php; then
+  cp -f /opt/humhub/protected/config/common.php /data/config/common.php
+fi
+
 #--- Check Permissions
 chown -R www-data:www-data /app/runtime
 chown -R www-data:www-data /data/*

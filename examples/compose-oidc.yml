@@ -1,0 +1,66 @@
+#---------------------------------------------------------------
+# Example: HumHub with OpenID Connect (OIDC) single sign-on
+#
+# See docs/oidc.md for the full reference. Replace the OIDC_* and
+# password values with your own. Inject secrets via a .env file or
+# Docker secrets instead of committing them.
+#
+# Register this redirect/callback URL at your identity provider:
+#   https://<SERVER_NAME>/user/auth/external?authclient=oidc
+#---------------------------------------------------------------
+
+services:
+  humhub:
+    image: humhub/humhub:stable
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3 (optional)
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./humhub-data:/data
+    environment:
+      - SERVER_NAME=https://humhub.example.com
+      # --- Database (dedicated, non-root user) ---
+      - HUMHUB_CONFIG__COMPONENTS__DB__DSN=mysql:host=db;dbname=humhub
+      - HUMHUB_CONFIG__COMPONENTS__DB__USERNAME=humhub
+      - HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD=changeMe-app
+      # --- OpenID Connect ---
+      - OIDC_ENABLE=true
+      - OIDC_ISSUER_URL=https://keycloak.example.com/realms/humhub
+      - OIDC_CLIENT_ID=humhub
+      - OIDC_CLIENT_SECRET=changeMe-oidc-secret
+      - OIDC_TITLE=Login via SSO
+      # - OIDC_ID=oidc                       # callback ?authclient=<id>
+      # - OIDC_SCOPE=openid profile email
+      # - OIDC_VALIDATE_JWS=true             # keep enabled in production
+    healthcheck:
+      test: ["CMD", "/app/bin/humhub-simple-healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  db:
+    image: mariadb:11.4
+    restart: always
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeMe-root
+      - MYSQL_DATABASE=humhub
+      - MYSQL_USER=humhub
+      - MYSQL_PASSWORD=changeMe-app
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
