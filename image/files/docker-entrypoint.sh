@@ -124,6 +124,25 @@ if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__JWT_KEY_SUBSCRIBER="${MERCURE_SECRET_SUB}"
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__JWT_KEY_PUBLISHER="${MERCURE_SECRET_PUB}"
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__VERIFY_SSL="false"
+
+  # The hub is embedded in this container, so the server must publish to it over
+  # loopback while the browser keeps subscribing via the public SERVER_NAME address.
+  # Derive the internal (publish) URL from SERVER_NAME, swapping the host for
+  # localhost but preserving scheme and port. Honors an explicit override.
+  if [ -z "${HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL}" ]; then
+    _mercure_addr="${SERVER_NAME%% *}"
+    case "$_mercure_addr" in
+      https://*) _mercure_scheme="https"; _mercure_hostport="${_mercure_addr#https://}" ;;
+      http://*)  _mercure_scheme="http";  _mercure_hostport="${_mercure_addr#http://}" ;;
+      *)         _mercure_scheme="https"; _mercure_hostport="$_mercure_addr" ;; # Caddy auto-HTTPS
+    esac
+    case "$_mercure_hostport" in
+      *:*) _mercure_internal="${_mercure_scheme}://localhost:${_mercure_hostport##*:}" ;;
+      *)   _mercure_internal="${_mercure_scheme}://localhost" ;;
+    esac
+    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="${_mercure_internal}/.well-known/mercure"
+  fi
+
   mkdir -p /data/caddy; chown www-data:www-data /data/caddy
   export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
       # Enable Mercure
