@@ -94,6 +94,7 @@ export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
             root /app/public/
             rewrite * {resp.header.X-Accel-Redirect}
             method * GET
+            header -X-Accel-Redirect
             file_server
         }
     }

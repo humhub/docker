@@ -1,6 +1,10 @@
 Changelog
 =========
 
+June 30, 2026
+-------------
+- Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)
+
 June 16, 2026
 --------------
 - Added experimental linux/arm64 multiarch support to nightly develop builds via buildx
