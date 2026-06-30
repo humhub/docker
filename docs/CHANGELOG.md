@@ -1,6 +1,10 @@
 Changelog
 =========
 
+June 30, 2026                                                                                                                                 
+-------------                                                                                                                                 
+- Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)
+       
 May 28, 2026
 ------------
 - Added APCu PHP extension to runtime image
