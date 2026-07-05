@@ -29,7 +29,7 @@ cd /opt/humhub
 ```yaml
 services:
   humhub:
-    image: humhub/humhub:stable-nightly
+    image: humhub/humhub:stable
     restart: unless-stopped
     ports:
       - "80:80"

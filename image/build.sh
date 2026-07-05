@@ -1,1 +1,1 @@
-docker build --build-arg HUMHUB_GIT_BRANCH=develop --tag humhub/humhub-internal:local .
+docker build --build-arg HUMHUB_GIT_BRANCH=develop --tag humhub/humhub:local .

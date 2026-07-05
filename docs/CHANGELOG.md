@@ -14,6 +14,11 @@ July 16, 2026
 -------------
 - Enh: Configurable access and error logging (stdout or file), see docs/logging.md
 
+July 5, 2026
+------------
+- Use humhub/humhub:stable as reference image tag in docs and examples
+- Fix image name references from humhub/humhub-internal to humhub/humhub
+
 June 30, 2026                                                                                                                                 
 -------------                                                                                                                                 
 - Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)
