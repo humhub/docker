@@ -126,22 +126,36 @@ if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__JWT_KEY_PUBLISHER="${MERCURE_SECRET_PUB}"
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__VERIFY_SSL="false"
 
-  # The hub is embedded in this container, so the server must publish to it over
-  # loopback while the browser keeps subscribing via the public SERVER_NAME address.
-  # Derive the internal (publish) URL from SERVER_NAME, swapping the host for
-  # localhost but preserving scheme and port. Honors an explicit override.
+  # The hub is embedded in this container. The browser subscribes over the public
+  # SERVER_NAME address (usually HTTPS), but the server also has to publish to the hub
+  # from inside the container. Publishing over the public HTTPS address via loopback is
+  # fragile: it relies on Caddy's short-lived internal-CA certificate for the loopback
+  # host, and during container (re)start and certificate rotation the TLS handshake
+  # intermittently fails with "tlsv1 alert internal error", dropping live updates.
+  #
+  # Instead, publish over a plaintext HTTP listener bound to a loopback-only,
+  # unpublished port. Caddy's "local" Mercure transport is process-global, so a publish
+  # on this listener reaches subscribers connected via the public address - without TLS,
+  # certificate lifecycle or HTTPS redirects. Honors an explicit internalHubUrl override
+  # (in which case no extra listener is added).
   if [ -z "${HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL}" ]; then
-    _mercure_addr="${SERVER_NAME%% *}"
-    case "$_mercure_addr" in
-      https://*) _mercure_scheme="https"; _mercure_hostport="${_mercure_addr#https://}" ;;
-      http://*)  _mercure_scheme="http";  _mercure_hostport="${_mercure_addr#http://}" ;;
-      *)         _mercure_scheme="https"; _mercure_hostport="$_mercure_addr" ;; # Caddy auto-HTTPS
-    esac
-    case "$_mercure_hostport" in
-      *:*) _mercure_internal="${_mercure_scheme}://localhost:${_mercure_hostport##*:}" ;;
-      *)   _mercure_internal="${_mercure_scheme}://localhost" ;;
-    esac
-    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="${_mercure_internal}/.well-known/mercure"
+    _mercure_internal_port="${HUMHUB_DOCKER__MERCURE_INTERNAL_PORT:-9080}"
+    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="http://localhost:${_mercure_internal_port}/.well-known/mercure"
+    export CADDY_EXTRA_CONFIG+="$(cat <<EOF
+
+# Internal Mercure publish endpoint: plaintext HTTP, bound to loopback only on an
+# unpublished port. Shares the process-global "local" transport with the public hub
+# so server-side publishing avoids the fragile loopback TLS handshake.
+http://localhost:${_mercure_internal_port} {
+      bind 127.0.0.1 ::1
+      mercure {
+            transport local
+            publisher_jwt {env.MERCURE_SECRET_PUB} HS256
+            subscriber_jwt {env.MERCURE_SECRET_SUB} HS256
+      }
+}
+EOF
+)"
   fi
 
   mkdir -p /data/caddy; chown www-data:www-data /data/caddy
