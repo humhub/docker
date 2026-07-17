@@ -85,10 +85,7 @@ export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
 EOF
 )"
 
-#----------------------------------------------------------------------
-# Logging: server runtime/error log (Caddy default logger)
-# See docs/logging.md
-#----------------------------------------------------------------------
+#--- Logging: server runtime/error log (Caddy default logger), see docs/logging.md
 if [ "$HUMHUB_DOCKER__SERVER_LOG" != "true" ]; then
   _server_log_output="output discard"
 elif [ "$HUMHUB_DOCKER__SERVER_LOG_OUTPUT" = "file" ]; then
@@ -106,9 +103,7 @@ export CADDY_GLOBAL_OPTIONS+="$(cat <<EOF
 EOF
 )"
 
-#----------------------------------------------------------------------
-# Logging: HTTP access log (site-scoped, opt-out via ACCESS_LOG=false)
-#----------------------------------------------------------------------
+#--- Logging: HTTP access log (site-scoped, opt-out via ACCESS_LOG=false)
 if [ "$HUMHUB_DOCKER__ACCESS_LOG" = "true" ]; then
   if [ "$HUMHUB_DOCKER__ACCESS_LOG_OUTPUT" = "file" ]; then
     _access_log_output="output file ${HUMHUB_DOCKER__ACCESS_LOG_FILE} {
@@ -135,9 +130,7 @@ EOF
 )"
 fi
 
-#----------------------------------------------------------------------
-# Caddy: Enable SendFile
-#----------------------------------------------------------------------
+#--- Caddy: Enable SendFile
 export HUMHUB_FIXED_SETTINGS__FILE__USE_X_SENDFILE=1
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
     # Enable Sendfile
