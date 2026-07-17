@@ -72,7 +72,7 @@ log is off, and server diagnostics/errors go to `stderr` as JSON.
 | `HUMHUB_DOCKER__ACCESS_LOG_FORMAT` | `json` | `json`, `console` | `json` for aggregators, `console` for humans |
 | `HUMHUB_DOCKER__ACCESS_LOG_OUTPUT` | `stdout` | `stdout`, `file` | Container stream or a file on `/data` |
 | `HUMHUB_DOCKER__ACCESS_LOG_FILE` | `/data/logs/access.log` | path | File path when output is `file` |
-| `HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE` | `10MiB` | size | Rotate file after this size |
+| `HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE` | `100MiB` | size | Rotate file after this size |
 | `HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP` | `5` | count | Number of rotated files to keep |
 
 The Mercure `authorization` query parameter is always redacted in the access log
@@ -89,6 +89,11 @@ absent, so it is kept on regardless of whether Mercure is enabled.
 | `HUMHUB_DOCKER__SERVER_LOG_FORMAT` | `json` | `json`, `console` | Log encoder |
 | `HUMHUB_DOCKER__SERVER_LOG_OUTPUT` | `stderr` | `stdout`, `stderr`, `file` | Destination |
 | `HUMHUB_DOCKER__SERVER_LOG_FILE` | `/data/logs/server.log` | path | File path when output is `file` |
+
+When `SERVER_LOG_OUTPUT=file`, the file is rotated by Caddy's built-in defaults
+(100 MiB, 10 files, 90 days). These are not exposed as env vars (unlike the access
+log's `*_ROLL_*`) because the server log is low-volume. On `stdout`/`stderr`,
+rotation is the Docker log driver's responsibility, not Caddy's.
 
 ### Client IP behind a reverse proxy
 
