@@ -1,6 +1,10 @@
 Changelog
 =========
 
+July 17, 2026
+-------------
+- Fix: Scheduler and worker wait for install and migrations to complete before starting (read-only check)
+
 June 30, 2026                                                                                                                                 
 -------------                                                                                                                                 
 - Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)
