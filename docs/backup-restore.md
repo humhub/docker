@@ -8,33 +8,29 @@ Our Docker image includes a built-in backup functionality. It is recommended to 
 
 ### Example `compose.yml` service
 ```yaml
-backup:
-  image: humhub/humhub-internal:develop
-  profiles: ["manual"]
-  restart: "no"
-  command: /app/bin/humhub-backup.sh
-  user: root
-  volumes:
-    - ./humhub-data:/data
-    - ./humhub-backup:/backup
-  environment:
-    - HUMHUB_CONFIG__COMPONENTS__DB__DSN=mysql:host=db;dbname=humhub
-    - HUMHUB_CONFIG__COMPONENTS__DB__USERNAME=root
-    - HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD=changeMe
-    - HUMHUB_DOCKER__BACKUP_MERGE_ARCHIVES=true 
+  backup:
+    extends:
+      service: humhub
+    profiles: ["manual"]
+    restart: "no"
+    command: /app/bin/humhub-backup.sh
+    user: root
+    volumes:
+      - ./humhub-backup:/backup
+    environment:
+      - HUMHUB_DOCKER__BACKUP_MERGE_ARCHIVES=true
 ```
+
+> **Important:** The `backup` service uses `extends` to inherit the image, environment (including database credentials, also from `env_file`) and volumes from your main `humhub` service, so they always stay in sync. You only add the backup-specific volume and settings, which are merged on top of the inherited ones.
 
 ### Notes
 
-- Use the same image as in your main `humhub` service.
-- The database environment variables should be taken from your main `humhub` service.
 - You must define a separate volume for backups. We strongly recommend not placing the backup volume inside the data volume. Ideally, use a dedicated partition or even a remote storage such as Samba or NFS.
 - The backup process generates a tar archive with the following format: `humhub_backup_§TIMESTAMP§.tar`
 - This archive contains two files:
   - Database backup (gzipped SQL dump): `humhub_db_§TIMESTAMP§.sql.gz`
   - Storage backup (gzipped tar archive): `humhub_storage_backup_§TIMESTAMP§.tar.gz`
   - Where `§TIMESTAMP§` corresponds to the output of the `date` command with the format `'%Y%m%d%H%M%S'`.
-- **Important:** The administrator is responsible for **archiving, rotating, and cleaning up old backups.** The backup process itself does not manage retention.
 - You can reduce temporary storage usage of the backup volume. Set the optional `HUMHUB_DOCKER__BACKUP_MERGE_ARCHIVES` environment variable to `false`.
 
 ## Running the Backup from the Host
@@ -53,6 +49,8 @@ docker compose run --rm backup
 - The exit code will be 0 on success or a non-zero value if an error occurred.
 
 ### Automatic execution via Cron
+
+> **Important:** The administrator is responsible for **archiving, rotating, and cleaning up old backups.** The backup process itself does not manage retention.
 
 To run the backup daily at 4:00 AM, add a cron job like this:
 
