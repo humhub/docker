@@ -4,6 +4,7 @@ Changelog
 July 17, 2026
 -------------
 - Fix: Documented backup service using compose extends to reuse humhub image and environment
+- Fix: Scheduler and worker wait for install and migrations to complete before starting (read-only check)
 
 June 30, 2026                                                                                                                                 
 -------------                                                                                                                                 

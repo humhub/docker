@@ -50,8 +50,8 @@ COPY files/supervisord.conf /etc/supervisor/conf.d/humhub.conf
 COPY files/index.php /app/public/
 COPY files/yii-wrapper /app/yii
 COPY files/docker-entrypoint.sh /
-COPY files/yii files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh /app/bin/
-RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh
+COPY files/yii files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh files/humhub-wait-ready.sh /app/bin/
+RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh /app/bin/humhub-wait-ready.sh
 
 
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp; \
