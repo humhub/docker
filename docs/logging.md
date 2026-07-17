@@ -13,9 +13,16 @@ Following the common container convention, the two streams are kept separate:
 - **`stdout`** carries the **HTTP access log** (disabled by default, see below).
 - **`stderr`** carries **server diagnostics/errors** and **PHP errors**.
 
-The HTTP access log is **off by default** because it is very verbose; enable it
-with `HUMHUB_DOCKER__ACCESS_LOG=true`. Each stream can instead be switched to a
-rotated file under the `/data` volume.
+> [!NOTE]
+> The HTTP access log is **off by default** because it is very verbose; enable it
+> with `HUMHUB_DOCKER__ACCESS_LOG=true`. Each stream can instead be switched to a
+> rotated file under the `/data` volume.
+
+> [!IMPORTANT]
+> Docker does **not** rotate or truncate container (`stdout`/`stderr`) logs by
+> default: the default `json-file` driver grows unbounded until it fills the disk.
+> Bounding and rotating them is the operator's responsibility. See
+> [Persistence and rotation](#persistence-and-rotation) below.
 
 ---
 
