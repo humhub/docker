@@ -1,6 +1,10 @@
 Changelog
 =========
 
+July 16, 2026
+-------------
+- Enh: Configurable access and error logging (stdout or file), see docs/logging.md
+
 June 30, 2026                                                                                                                                 
 -------------                                                                                                                                 
 - Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)

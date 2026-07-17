@@ -29,6 +29,20 @@ export HUMHUB_DOCKER__AUTOSTART_SCHEDULER=${HUMHUB_DOCKER__AUTOSTART_SCHEDULER:-
 export HUMHUB_DOCKER__AUTOSTART_WORKER=${HUMHUB_DOCKER__AUTOSTART_WORKER:-"true"}
 export HUMHUB_DOCKER__NUMPROCS_WORKER=${HUMHUB_DOCKER__NUMPROCS_WORKER:-"2"}
 
+#--- Logging defaults (see docs/logging.md)
+export HUMHUB_DOCKER__ACCESS_LOG=${HUMHUB_DOCKER__ACCESS_LOG:-"true"}
+export HUMHUB_DOCKER__ACCESS_LOG_FORMAT=${HUMHUB_DOCKER__ACCESS_LOG_FORMAT:-"json"}
+export HUMHUB_DOCKER__ACCESS_LOG_OUTPUT=${HUMHUB_DOCKER__ACCESS_LOG_OUTPUT:-"stdout"}
+export HUMHUB_DOCKER__ACCESS_LOG_FILE=${HUMHUB_DOCKER__ACCESS_LOG_FILE:-"/data/logs/access.log"}
+export HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE=${HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE:-"10MiB"}
+export HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP=${HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP:-"5"}
+export HUMHUB_DOCKER__SERVER_LOG=${HUMHUB_DOCKER__SERVER_LOG:-"true"}
+export HUMHUB_DOCKER__SERVER_LOG_LEVEL=${HUMHUB_DOCKER__SERVER_LOG_LEVEL:-"INFO"}
+export HUMHUB_DOCKER__SERVER_LOG_FORMAT=${HUMHUB_DOCKER__SERVER_LOG_FORMAT:-"json"}
+export HUMHUB_DOCKER__SERVER_LOG_OUTPUT=${HUMHUB_DOCKER__SERVER_LOG_OUTPUT:-"stderr"}
+export HUMHUB_DOCKER__SERVER_LOG_FILE=${HUMHUB_DOCKER__SERVER_LOG_FILE:-"/data/logs/server.log"}
+export HUMHUB_DOCKER__APP_LOG_STDOUT=${HUMHUB_DOCKER__APP_LOG_STDOUT:-"false"}
+
 #----------------------------------------------------------------------
 # MOUNTED DATA FOLDER HANDLING
 #----------------------------------------------------------------------
@@ -64,19 +78,61 @@ export HUMHUB_CONFIG__MODULES__INSTALLER__ENABLE_AUTO_SETUP="$AUTO_SETUP"
 #----------------------------------------------------------------------
 # Caddy: Configuration
 #----------------------------------------------------------------------
-#export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
-#    log {
-#      output stderr
-#      level DEBUG
-#      format console
-#    }
-#EOF
-#)"
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
   # Forbidden Directories
   respond /uploads/file/* 403
 EOF
 )"
+
+#----------------------------------------------------------------------
+# Logging: server runtime/error log (Caddy default logger)
+# See docs/logging.md
+#----------------------------------------------------------------------
+if [ "$HUMHUB_DOCKER__SERVER_LOG" != "true" ]; then
+  _server_log_output="output discard"
+elif [ "$HUMHUB_DOCKER__SERVER_LOG_OUTPUT" = "file" ]; then
+  _server_log_output="output file ${HUMHUB_DOCKER__SERVER_LOG_FILE}"
+else
+  _server_log_output="output ${HUMHUB_DOCKER__SERVER_LOG_OUTPUT}"
+fi
+export CADDY_GLOBAL_OPTIONS+="$(cat <<EOF
+
+  log {
+    ${_server_log_output}
+    level ${HUMHUB_DOCKER__SERVER_LOG_LEVEL}
+    format ${HUMHUB_DOCKER__SERVER_LOG_FORMAT}
+  }
+EOF
+)"
+
+#----------------------------------------------------------------------
+# Logging: HTTP access log (site-scoped, opt-out via ACCESS_LOG=false)
+#----------------------------------------------------------------------
+if [ "$HUMHUB_DOCKER__ACCESS_LOG" = "true" ]; then
+  if [ "$HUMHUB_DOCKER__ACCESS_LOG_OUTPUT" = "file" ]; then
+    _access_log_output="output file ${HUMHUB_DOCKER__ACCESS_LOG_FILE} {
+      roll_size ${HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE}
+      roll_keep ${HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP}
+    }"
+  else
+    _access_log_output="output ${HUMHUB_DOCKER__ACCESS_LOG_OUTPUT}"
+  fi
+  export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<EOF
+
+  # HTTP access log
+  log {
+    ${_access_log_output}
+    format filter {
+      wrap ${HUMHUB_DOCKER__ACCESS_LOG_FORMAT}
+      # Redact the Mercure authorization query parameter
+      request>uri query {
+        replace authorization REDACTED
+      }
+    }
+  }
+EOF
+)"
+fi
 
 #----------------------------------------------------------------------
 # Caddy: Enable SendFile
@@ -107,6 +163,16 @@ export FRANKENPHP_CONFIG+="$(cat <<'EOF'
        php_ini post_max_size 1G
        php_ini max_input_time 600
        php_ini max_execution_time 600
+
+EOF
+)"
+
+# PHP error logging: always log to the container stream (stderr).
+# display_errors stays Off so errors are never leaked to the browser; a separate
+# developer image can override this.
+export FRANKENPHP_CONFIG+="$(cat <<'EOF'
+       php_ini log_errors On
+       php_ini display_errors Off
 
 EOF
 )"

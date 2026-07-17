@@ -80,7 +80,19 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_ALIASES__WEBROOT=/app/public \
     HUMHUB_ALIASES__APP=/opt/humhub/protected \
     HUMHUB_ALIASES__CONFIG=/data/config \
-    HUMHUB_ALIASES__HUMHUB=/opt/humhub/protected/humhub
+    HUMHUB_ALIASES__HUMHUB=/opt/humhub/protected/humhub \
+    HUMHUB_DOCKER__ACCESS_LOG=true \
+    HUMHUB_DOCKER__ACCESS_LOG_FORMAT=json \
+    HUMHUB_DOCKER__ACCESS_LOG_OUTPUT=stdout \
+    HUMHUB_DOCKER__ACCESS_LOG_FILE=/data/logs/access.log \
+    HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE=10MiB \
+    HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP=5 \
+    HUMHUB_DOCKER__SERVER_LOG=true \
+    HUMHUB_DOCKER__SERVER_LOG_LEVEL=INFO \
+    HUMHUB_DOCKER__SERVER_LOG_FORMAT=json \
+    HUMHUB_DOCKER__SERVER_LOG_OUTPUT=stderr \
+    HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
+    HUMHUB_DOCKER__APP_LOG_STDOUT=false
 
 # --- Startup ---
 CMD ["/docker-entrypoint.sh"]
