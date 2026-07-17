@@ -1,6 +1,10 @@
 Changelog
 =========
 
+July 17, 2026
+-------------
+- Fix: Documented backup service using compose extends to reuse humhub image and environment
+
 June 30, 2026                                                                                                                                 
 -------------                                                                                                                                 
 - Fix: Strip X-Accel-Redirect header from responses so it is not exposed to clients (e.g. Cloudflare)
