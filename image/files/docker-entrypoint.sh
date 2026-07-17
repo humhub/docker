@@ -49,6 +49,7 @@ export HUMHUB_DOCKER__APP_LOG_STDOUT=${HUMHUB_DOCKER__APP_LOG_STDOUT:-"false"}
 
 #--- Ensure mounted data folder structure
 mkdir -p /data/{uploads,assets,logs,config,modules,modules-custom,themes,caddy}
+touch /data/logs/app.log
 
 #--- Copy defaults (if not exist) to mounted data folder
 cp -rn /opt/humhub/protected/config/ /data/
