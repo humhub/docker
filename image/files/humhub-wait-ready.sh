@@ -22,7 +22,7 @@ while true; do
         break
     fi
     echo "HumHub not installed yet. Waiting..."
-    sleep 30
+    sleep 15
 done
 
 #--- 2) Wait until all migrations (core + modules) have been applied
@@ -32,5 +32,5 @@ while true; do
         break
     fi
     echo "Database not fully migrated yet. Waiting..."
-    sleep 30
+    sleep 15
 done
