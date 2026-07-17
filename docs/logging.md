@@ -27,7 +27,7 @@ rotated file under the `/data` volume.
 | Server runtime/error log | Startup, TLS, routing, panics (the `error_log` analog) | `stderr` | JSON | Docker log driver (stderr) or Caddy roll (file) |
 | PHP errors (web) | Fatals, warnings, notices from web requests | rides the server log (`logger=frankenphp`) | server log format | follows the server log |
 | PHP errors (CLI) | Errors from worker / scheduler / `yii` | `stderr` | PHP text | Docker log driver |
-| HumHub app log (`FileTarget`) | App `error` + `warning` | `/data/logs/app.log` | Yii text | Yii built-in: 10 MB x 5 files |
+| HumHub app log (`FileTarget`) | App `error` + `warning` | `/data/logs/app.log` (also mirrored to `stdout` by default) | Yii text | Yii built-in: 10 MB x 5 files |
 | HumHub app log (`DbTarget`) | App `error` + `warning` | `log` DB table (admin UI) | DB rows | Daily cron prune, 7 day retention |
 | Worker | Queue job output | `stdout`/`stderr` | text | Docker log driver |
 | Scheduler | Cron run output | `stdout`/`stderr` | text | Docker log driver |
@@ -114,12 +114,13 @@ your privacy requirements.
 ### HumHub application log
 
 The file (`/data/logs/app.log`) and database targets are configured by HumHub core
-and are always active. To additionally mirror `app.log` onto the container `stdout`
-(useful when shipping all logs through `docker logs`):
+and are always active. By default `app.log` is also mirrored onto the container
+`stdout` (so it is visible via `docker logs` / any log driver); set the variable to
+`false` if you only want the file:
 
 | Variable | Default | Values | Description |
 |---|---|---|---|
-| `HUMHUB_DOCKER__APP_LOG_STDOUT` | `false` | `true`, `false` | Tail `app.log` to the container `stdout` |
+| `HUMHUB_DOCKER__APP_LOG_STDOUT` | `true` | `true`, `false` | Tail `app.log` to the container `stdout` |
 
 ### PHP errors
 

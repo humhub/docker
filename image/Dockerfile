@@ -92,7 +92,7 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__SERVER_LOG_FORMAT=json \
     HUMHUB_DOCKER__SERVER_LOG_OUTPUT=stderr \
     HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
-    HUMHUB_DOCKER__APP_LOG_STDOUT=false
+    HUMHUB_DOCKER__APP_LOG_STDOUT=true
 
 # --- Startup ---
 CMD ["/docker-entrypoint.sh"]
