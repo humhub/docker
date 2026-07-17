@@ -30,7 +30,7 @@ export HUMHUB_DOCKER__AUTOSTART_WORKER=${HUMHUB_DOCKER__AUTOSTART_WORKER:-"true"
 export HUMHUB_DOCKER__NUMPROCS_WORKER=${HUMHUB_DOCKER__NUMPROCS_WORKER:-"2"}
 
 #--- Logging defaults (see docs/logging.md)
-export HUMHUB_DOCKER__ACCESS_LOG=${HUMHUB_DOCKER__ACCESS_LOG:-"true"}
+export HUMHUB_DOCKER__ACCESS_LOG=${HUMHUB_DOCKER__ACCESS_LOG:-"false"}
 export HUMHUB_DOCKER__ACCESS_LOG_FORMAT=${HUMHUB_DOCKER__ACCESS_LOG_FORMAT:-"json"}
 export HUMHUB_DOCKER__ACCESS_LOG_OUTPUT=${HUMHUB_DOCKER__ACCESS_LOG_OUTPUT:-"stdout"}
 export HUMHUB_DOCKER__ACCESS_LOG_FILE=${HUMHUB_DOCKER__ACCESS_LOG_FILE:-"/data/logs/access.log"}
@@ -163,14 +163,6 @@ export FRANKENPHP_CONFIG+="$(cat <<'EOF'
        php_ini post_max_size 1G
        php_ini max_input_time 600
        php_ini max_execution_time 600
-
-EOF
-)"
-
-# PHP error logging: always log to the container stream (stderr).
-# display_errors stays Off so errors are never leaked to the browser; a separate
-# developer image can override this.
-export FRANKENPHP_CONFIG+="$(cat <<'EOF'
        php_ini log_errors On
        php_ini display_errors Off
 

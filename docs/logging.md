@@ -10,10 +10,12 @@ By default the operational logs are written to the container's `stdout`/`stderr`
 so they can be picked up by `docker logs` or any log driver without extra setup.
 Following the common container convention, the two streams are kept separate:
 
-- **`stdout`** carries the **HTTP access log**.
+- **`stdout`** carries the **HTTP access log** (disabled by default, see below).
 - **`stderr`** carries **server diagnostics/errors** and **PHP errors**.
 
-Each stream can instead be switched to a rotated file under the `/data` volume.
+The HTTP access log is **off by default** because it is very verbose; enable it
+with `HUMHUB_DOCKER__ACCESS_LOG=true`. Each stream can instead be switched to a
+rotated file under the `/data` volume.
 
 ---
 
@@ -21,7 +23,7 @@ Each stream can instead be switched to a rotated file under the `/data` volume.
 
 | Source | Content | Default destination | Default format | Rotation |
 |---|---|---|---|---|
-| HTTP access log | One entry per request | `stdout` | JSON | Docker log driver (stdout) or Caddy roll (file) |
+| HTTP access log | One entry per request | `stdout` (disabled by default) | JSON | Docker log driver (stdout) or Caddy roll (file) |
 | Server runtime/error log | Startup, TLS, routing, panics (the `error_log` analog) | `stderr` | JSON | Docker log driver (stderr) or Caddy roll (file) |
 | PHP errors (web) | Fatals, warnings, notices from web requests | rides the server log (`logger=frankenphp`) | server log format | follows the server log |
 | PHP errors (CLI) | Errors from worker / scheduler / `yii` | `stderr` | PHP text | Docker log driver |
@@ -52,15 +54,14 @@ log is additionally visible under **Administration -> Information -> Logging**.
 
 ## Configuration
 
-All logging is controlled through environment variables. The defaults reproduce
-the behaviour described above (access log on to `stdout`, diagnostics/errors on
-`stderr`, both JSON).
+All logging is controlled through environment variables. By default the access
+log is off, and server diagnostics/errors go to `stderr` as JSON.
 
 ### HTTP access log
 
 | Variable | Default | Values | Description |
 |---|---|---|---|
-| `HUMHUB_DOCKER__ACCESS_LOG` | `true` | `true`, `false` | Enable the HTTP access log |
+| `HUMHUB_DOCKER__ACCESS_LOG` | `false` | `true`, `false` | Enable the HTTP access log |
 | `HUMHUB_DOCKER__ACCESS_LOG_FORMAT` | `json` | `json`, `console` | `json` for aggregators, `console` for humans |
 | `HUMHUB_DOCKER__ACCESS_LOG_OUTPUT` | `stdout` | `stdout`, `file` | Container stream or a file on `/data` |
 | `HUMHUB_DOCKER__ACCESS_LOG_FILE` | `/data/logs/access.log` | path | File path when output is `file` |
@@ -110,13 +111,13 @@ override this.
   errors to their own process `stderr`, which always reaches the container
   `stderr` regardless of the `SERVER_LOG` settings.
 
-### Reproducing the previous behaviour
+### Enabling the access log
 
-Before these settings existed there was no HTTP access log, only the web server's
-default diagnostics on `stderr`. To get exactly that back:
+The access log is off by default (one entry per request is very verbose). Turn it
+on when you need request-level visibility:
 
 ```
-HUMHUB_DOCKER__ACCESS_LOG=false
+HUMHUB_DOCKER__ACCESS_LOG=true
 ```
 
 ---
