@@ -1,6 +1,11 @@
 Changelog
 =========
 
+July 17, 2026
+-------------
+- Fix: Documented backup service using compose extends to reuse humhub image and environment
+- Fix: Scheduler and worker wait for install and migrations to complete before starting (read-only check)
+
 July 7, 2026
 ------------
 - Fix: Publish live (Mercure) updates via a loopback-only plaintext HTTP endpoint instead of the public HTTPS address, avoiding intermittent "tlsv1 alert internal error" TLS handshake failures against Caddy's internal certificate
