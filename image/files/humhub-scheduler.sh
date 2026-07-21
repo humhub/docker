@@ -7,18 +7,8 @@ exec > >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done) \
 
 sleep 5
 
-while true; do
-
-    output=$(/app/yii queue/info 2>&1)
-
-    if [[ "$output" != *'yii\\db\\Exception'* ]]; then
-        echo "Database connection successful. Initiated..."
-        break
-    else
-        echo "Database not configured and initialized. Waiting..."
-        sleep 30
-    fi
-done
+# Wait until the database is reachable and fully migrated (read-only check)
+/app/bin/humhub-wait-ready.sh
 
 while true; do
 
