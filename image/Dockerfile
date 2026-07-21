@@ -50,8 +50,8 @@ COPY files/supervisord.conf /etc/supervisor/conf.d/humhub.conf
 COPY files/index.php /app/public/
 COPY files/yii-wrapper /app/yii
 COPY files/docker-entrypoint.sh /
-COPY files/yii files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh files/humhub-wait-ready.sh /app/bin/
-RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh /app/bin/humhub-wait-ready.sh
+COPY files/yii files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh files/humhub-app-log.sh files/humhub-wait-ready.sh /app/bin/
+RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh /app/bin/humhub-app-log.sh /app/bin/humhub-wait-ready.sh
 
 
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp; \
@@ -80,7 +80,23 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_ALIASES__WEBROOT=/app/public \
     HUMHUB_ALIASES__APP=/opt/humhub/protected \
     HUMHUB_ALIASES__CONFIG=/data/config \
-    HUMHUB_ALIASES__HUMHUB=/opt/humhub/protected/humhub
+    HUMHUB_ALIASES__HUMHUB=/opt/humhub/protected/humhub \
+    HUMHUB_DOCKER__AUTOSTART_FRANKENPHP=true \
+    HUMHUB_DOCKER__AUTOSTART_SCHEDULER=true \
+    HUMHUB_DOCKER__AUTOSTART_WORKER=true \
+    HUMHUB_DOCKER__NUMPROCS_WORKER=2 \
+    HUMHUB_DOCKER__ACCESS_LOG=false \
+    HUMHUB_DOCKER__ACCESS_LOG_FORMAT=json \
+    HUMHUB_DOCKER__ACCESS_LOG_TARGET=stdout \
+    HUMHUB_DOCKER__ACCESS_LOG_FILE=/data/logs/access.log \
+    HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE=100MiB \
+    HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP=5 \
+    HUMHUB_DOCKER__SERVER_LOG=true \
+    HUMHUB_DOCKER__SERVER_LOG_LEVEL=INFO \
+    HUMHUB_DOCKER__SERVER_LOG_FORMAT=json \
+    HUMHUB_DOCKER__SERVER_LOG_TARGET=stderr \
+    HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
+    HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT=true
 
 # --- Startup ---
 CMD ["/docker-entrypoint.sh"]
