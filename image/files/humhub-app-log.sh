@@ -1,18 +1,9 @@
 #!/bin/bash
 
 # Prefix each output line with the supervisor process name, keeping stdout/stderr separate.
-PREFIX="[${SUPERVISOR_PROCESS_NAME:-humhub-scheduler}]"
+PREFIX="[${SUPERVISOR_PROCESS_NAME:-humhub-app-log}]"
 exec > >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done) \
      2> >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done >&2)
 
-sleep 5
-
-# Wait until the database is reachable and fully migrated (read-only check)
-/app/bin/humhub-wait-ready.sh
-
-while true; do
-
-    /app/yii cron/run
-    sleep 60
-
-done
+# -n 0: start at the end of the file, mirror only newly appended lines
+exec tail -n 0 -F /data/logs/app.log

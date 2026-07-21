@@ -19,15 +19,8 @@ echo '        `---                                                           '
 echo
 echo
 
-#----------------------------------------------------------------------
-# DETERMINE SINGLE OR MULTI SERVICE SETUP
-#----------------------------------------------------------------------
-
-#--- Set autostart true per defaults for all programs in supervisord
-export HUMHUB_DOCKER__AUTOSTART_FRANKENPHP=${HUMHUB_DOCKER__AUTOSTART_FRANKENPHP:-"true"}
-export HUMHUB_DOCKER__AUTOSTART_SCHEDULER=${HUMHUB_DOCKER__AUTOSTART_SCHEDULER:-"true"}
-export HUMHUB_DOCKER__AUTOSTART_WORKER=${HUMHUB_DOCKER__AUTOSTART_WORKER:-"true"}
-export HUMHUB_DOCKER__NUMPROCS_WORKER=${HUMHUB_DOCKER__NUMPROCS_WORKER:-"2"}
+# Default values for all HUMHUB_DOCKER__* settings are declared as ENV in the
+# Dockerfile (the single source of truth). Operators override them via -e / compose.
 
 #----------------------------------------------------------------------
 # MOUNTED DATA FOLDER HANDLING
@@ -35,6 +28,7 @@ export HUMHUB_DOCKER__NUMPROCS_WORKER=${HUMHUB_DOCKER__NUMPROCS_WORKER:-"2"}
 
 #--- Ensure mounted data folder structure
 mkdir -p /data/{uploads,assets,logs,config,modules,modules-custom,themes,caddy}
+touch /data/logs/app.log
 
 #--- Copy defaults (if not exist) to mounted data folder
 cp -rn /opt/humhub/protected/config/ /data/
@@ -64,23 +58,58 @@ export HUMHUB_CONFIG__MODULES__INSTALLER__ENABLE_AUTO_SETUP="$AUTO_SETUP"
 #----------------------------------------------------------------------
 # Caddy: Configuration
 #----------------------------------------------------------------------
-#export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
-#    log {
-#      output stderr
-#      level DEBUG
-#      format console
-#    }
-#EOF
-#)"
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
   # Forbidden Directories
   respond /uploads/file/* 403
 EOF
 )"
 
-#----------------------------------------------------------------------
-# Caddy: Enable SendFile
-#----------------------------------------------------------------------
+#--- Logging: server runtime/error log (Caddy default logger), see docs/logging.md
+if [ "$HUMHUB_DOCKER__SERVER_LOG" != "true" ]; then
+  _server_log_output="output discard"
+elif [ "$HUMHUB_DOCKER__SERVER_LOG_TARGET" = "file" ]; then
+  _server_log_output="output file ${HUMHUB_DOCKER__SERVER_LOG_FILE}"
+else
+  _server_log_output="output ${HUMHUB_DOCKER__SERVER_LOG_TARGET}"
+fi
+export CADDY_GLOBAL_OPTIONS+="$(cat <<EOF
+
+  log {
+    ${_server_log_output}
+    level ${HUMHUB_DOCKER__SERVER_LOG_LEVEL}
+    format ${HUMHUB_DOCKER__SERVER_LOG_FORMAT}
+  }
+EOF
+)"
+
+#--- Logging: HTTP access log (site-scoped, opt-out via ACCESS_LOG=false)
+if [ "$HUMHUB_DOCKER__ACCESS_LOG" = "true" ]; then
+  if [ "$HUMHUB_DOCKER__ACCESS_LOG_TARGET" = "file" ]; then
+    _access_log_output="output file ${HUMHUB_DOCKER__ACCESS_LOG_FILE} {
+      roll_size ${HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE}
+      roll_keep ${HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP}
+    }"
+  else
+    _access_log_output="output ${HUMHUB_DOCKER__ACCESS_LOG_TARGET}"
+  fi
+  export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<EOF
+
+  # HTTP access log
+  log {
+    ${_access_log_output}
+    format filter {
+      wrap ${HUMHUB_DOCKER__ACCESS_LOG_FORMAT}
+      # Redact the Mercure authorization query parameter
+      request>uri query {
+        replace authorization REDACTED
+      }
+    }
+  }
+EOF
+)"
+fi
+
+#--- Caddy: Enable SendFile
 export HUMHUB_FIXED_SETTINGS__FILE__USE_X_SENDFILE=1
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
     # Enable Sendfile
@@ -107,6 +136,8 @@ export FRANKENPHP_CONFIG+="$(cat <<'EOF'
        php_ini post_max_size 1G
        php_ini max_input_time 600
        php_ini max_execution_time 600
+       php_ini log_errors On
+       php_ini display_errors Off
 
 EOF
 )"
