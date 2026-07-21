@@ -19,29 +19,8 @@ echo '        `---                                                           '
 echo
 echo
 
-#----------------------------------------------------------------------
-# DETERMINE SINGLE OR MULTI SERVICE SETUP
-#----------------------------------------------------------------------
-
-#--- Set autostart true per defaults for all programs in supervisord
-export HUMHUB_DOCKER__AUTOSTART_FRANKENPHP=${HUMHUB_DOCKER__AUTOSTART_FRANKENPHP:-"true"}
-export HUMHUB_DOCKER__AUTOSTART_SCHEDULER=${HUMHUB_DOCKER__AUTOSTART_SCHEDULER:-"true"}
-export HUMHUB_DOCKER__AUTOSTART_WORKER=${HUMHUB_DOCKER__AUTOSTART_WORKER:-"true"}
-export HUMHUB_DOCKER__NUMPROCS_WORKER=${HUMHUB_DOCKER__NUMPROCS_WORKER:-"2"}
-
-#--- Logging defaults (see docs/logging.md)
-export HUMHUB_DOCKER__ACCESS_LOG=${HUMHUB_DOCKER__ACCESS_LOG:-"false"}
-export HUMHUB_DOCKER__ACCESS_LOG_FORMAT=${HUMHUB_DOCKER__ACCESS_LOG_FORMAT:-"json"}
-export HUMHUB_DOCKER__ACCESS_LOG_TARGET=${HUMHUB_DOCKER__ACCESS_LOG_TARGET:-"stdout"}
-export HUMHUB_DOCKER__ACCESS_LOG_FILE=${HUMHUB_DOCKER__ACCESS_LOG_FILE:-"/data/logs/access.log"}
-export HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE=${HUMHUB_DOCKER__ACCESS_LOG_ROLL_SIZE:-"100MiB"}
-export HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP=${HUMHUB_DOCKER__ACCESS_LOG_ROLL_KEEP:-"5"}
-export HUMHUB_DOCKER__SERVER_LOG=${HUMHUB_DOCKER__SERVER_LOG:-"true"}
-export HUMHUB_DOCKER__SERVER_LOG_LEVEL=${HUMHUB_DOCKER__SERVER_LOG_LEVEL:-"INFO"}
-export HUMHUB_DOCKER__SERVER_LOG_FORMAT=${HUMHUB_DOCKER__SERVER_LOG_FORMAT:-"json"}
-export HUMHUB_DOCKER__SERVER_LOG_TARGET=${HUMHUB_DOCKER__SERVER_LOG_TARGET:-"stderr"}
-export HUMHUB_DOCKER__SERVER_LOG_FILE=${HUMHUB_DOCKER__SERVER_LOG_FILE:-"/data/logs/server.log"}
-export HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT=${HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT:-"true"}
+# Default values for all HUMHUB_DOCKER__* settings are declared as ENV in the
+# Dockerfile (the single source of truth). Operators override them via -e / compose.
 
 #----------------------------------------------------------------------
 # MOUNTED DATA FOLDER HANDLING
