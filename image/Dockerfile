@@ -22,7 +22,8 @@ RUN git clone https://github.com/humhub/humhub.git . && \
 # ======================================
 # Stage 2: Runtime with FrankenPHP + Supervisor
 # ======================================
-FROM dunglas/frankenphp:1-php8.4
+# TEMPORARY PIN for opcache_reset() issue; revert to "1-php8.4" after HumHub core fix ships.
+FROM dunglas/frankenphp:1.12.4-php8.4
 
 USER root
 #RUN apt-get update && apt-get install -y supervisor bash && rm -rf /var/lib/apt/lists/*
