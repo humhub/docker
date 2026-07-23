@@ -4,6 +4,8 @@ Changelog
 July 23, 2026
 -------------
 - Fix: Serialize scheduler/worker readiness probe via lock to avoid concurrent cache-flush warnings on startup
+- Use humhub/humhub:stable as reference image tag in docs and examples
+- Use humhub:local as the local build image tag (was humhub/humhub-internal:local)
 
 July 17, 2026
 -------------

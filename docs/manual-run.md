@@ -9,6 +9,6 @@ docker run \
       -e HUMHUB_DEBUG=true \
       -e SERVER_NAME=https://humhub.example.com \
       --volume ./humhub-data:/data \
-      humhub/humhub:stable-nightly
+      humhub/humhub:stable
 ```
 
