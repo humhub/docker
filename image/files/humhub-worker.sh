@@ -13,7 +13,7 @@ exec > >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done) \
      2> >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done >&2)
 
 # Randomized delay so the workers don't grab the lock at once and the scheduler (no jitter) gets it first.
-sleep $((10 + RANDOM % 10))
+sleep $((6 + RANDOM % 8))
 
 # Wait behind the shared lock (see humhub-scheduler.sh); own check kept for safety.
 flock /tmp/humhub-wait-ready.lock /app/bin/humhub-wait-ready.sh

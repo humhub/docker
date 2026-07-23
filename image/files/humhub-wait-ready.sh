@@ -16,6 +16,8 @@
 # avoiding any write side effect on a fresh, empty database.
 #----------------------------------------------------------------------
 
+echo "Checking HumHub readiness (database, installation, migrations)..."
+
 #--- 1) Wait until HumHub is installed
 while true; do
     if [[ "$(/app/yii settings/list-module admin 2>&1)" == *"installationId"* ]]; then
