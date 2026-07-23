@@ -7,7 +7,7 @@ exec > >(while IFS= read -r line; do printf '%s %s\n' "$PREFIX" "$line"; done) \
 
 sleep 5
 
-echo "Checking HumHub readiness (database, installation, migrations)..."
+echo "Waiting for HumHub readiness (database, installation, migrations)..."
 # Serialize the readiness probe (shared lock) so concurrent cache flushes can't race; scheduler is head, no jitter.
 flock /tmp/humhub-wait-ready.lock /app/bin/humhub-wait-ready.sh
 
