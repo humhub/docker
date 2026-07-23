@@ -1,6 +1,10 @@
 Changelog
 =========
 
+July 23, 2026
+-------------
+- Fix: Serialize scheduler/worker readiness probe via lock to avoid concurrent cache-flush warnings on startup
+
 July 17, 2026
 -------------
 - Fix: Documented backup service using compose extends to reuse humhub image and environment
