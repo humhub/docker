@@ -169,16 +169,19 @@ if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
   # on this listener reaches subscribers connected via the public address - without TLS,
   # certificate lifecycle or HTTPS redirects. Honors an explicit internalHubUrl override
   # (in which case no extra listener is added).
+  #
+  # IPv4 loopback only: on hosts with IPv6 disabled the container has no ::1, and a
+  # listener bound to it would make Caddy fail to start. 127.0.0.1 exists everywhere.
   if [ -z "${HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL}" ]; then
     _mercure_internal_port="${HUMHUB_DOCKER__MERCURE_INTERNAL_PORT:-9080}"
-    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="http://localhost:${_mercure_internal_port}/.well-known/mercure"
+    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="http://127.0.0.1:${_mercure_internal_port}/.well-known/mercure"
     export CADDY_EXTRA_CONFIG+="$(cat <<EOF
 
-# Internal Mercure publish endpoint: plaintext HTTP, bound to loopback only on an
+# Internal Mercure publish endpoint: plaintext HTTP, bound to IPv4 loopback only on an
 # unpublished port. Shares the process-global "local" transport with the public hub
 # so server-side publishing avoids the fragile loopback TLS handshake.
-http://localhost:${_mercure_internal_port} {
-      bind 127.0.0.1 ::1
+http://127.0.0.1:${_mercure_internal_port} {
+      bind 127.0.0.1
       mercure {
             transport local
             publisher_jwt {env.MERCURE_SECRET_PUB} HS256

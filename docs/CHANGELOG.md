@@ -1,6 +1,10 @@
 Changelog
 =========
 
+August 18, 2026
+---------------
+- Fix: Bind the internal Mercure publish listener to IPv4 loopback only so the container starts on hosts with IPv6 disabled
+
 July 23, 2026
 -------------
 - Fix: Serialize scheduler/worker readiness probe via lock to avoid concurrent cache-flush warnings on startup
