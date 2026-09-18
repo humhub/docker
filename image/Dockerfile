@@ -68,6 +68,23 @@ RUN mkdir -p /data \
     && ln -s /data/themes/ /app/public/themes \
     && ln -s /opt/humhub/static/ /app/public/static
 
+# --- HumHub data directories ---
+# HumHub 1.20 anchors the configuration, the uploads and the themes directory on the installation
+# root. The latter two used to hang off the document root, which this image relocates to
+# /app/public and which therefore already put them on the volume; the configuration directory
+# additionally moved out of protected/. None of the three is addressed through an alias at the
+# point that matters, so keeping them on the mounted volume takes links rather than environment
+# overrides. Both layouts are linked, so the image works whichever release is built, and what a
+# release ships in those directories is kept aside as the template the entrypoint seeds /data from.
+RUN mkdir -p /opt/humhub-defaults \
+    && humhub_config_dir="$(test -d /opt/humhub/config && echo /opt/humhub/config || echo /opt/humhub/protected/config)" \
+    && mv "$humhub_config_dir" /opt/humhub-defaults/config \
+    && ln -s /data/config "$humhub_config_dir" \
+    && mv /opt/humhub/uploads /opt/humhub-defaults/uploads \
+    && ln -s /data/uploads /opt/humhub/uploads \
+    && rm -rf /opt/humhub/themes \
+    && ln -s /data/themes /opt/humhub/themes
+
 # --- Environment ---
 ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__MERCURE_ENABLE=true \

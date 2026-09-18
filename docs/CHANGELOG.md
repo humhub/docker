@@ -1,6 +1,11 @@
 Changelog
 =========
 
+September 18, 2026
+------------------
+- Fix: Keep the configuration directory on the mounted data volume. HumHub reads it through the real path of its installation rather than through the `@config` alias, so `/data/config` was created, seeded and backed up but never actually loaded; HumHub 1.20 additionally moves the directory out of `protected/`
+- Fix: Keep uploads and custom themes on the mounted data volume under HumHub 1.20, which anchors both on the installation root instead of on the document root this image relocates - without this, uploads are written into the container layer and are lost when the container is recreated
+
 August 18, 2026
 ---------------
 - Fix: Bind the internal Mercure publish listener to IPv4 loopback only so the container starts on hosts with IPv6 disabled
