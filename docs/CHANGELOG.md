@@ -1,6 +1,10 @@
 Changelog
 =========
 
+September 20, 2026
+------------------
+- Revert temporary FrankenPHP 1.12.4 pin, base image tracks the floating 1-php8.4 tag again (HumHub core fix humhub/humhub#8340 shipped in 1.18.5 and 1.19.0-beta.2)
+
 August 18, 2026
 ---------------
 - Fix: Bind the internal Mercure publish listener to IPv4 loopback only so the container starts on hosts with IPv6 disabled
