@@ -152,42 +152,6 @@ if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__JWT_KEY_SUBSCRIBER="${MERCURE_SECRET_SUB}"
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__JWT_KEY_PUBLISHER="${MERCURE_SECRET_PUB}"
   export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__VERIFY_SSL="false"
-
-  # The hub is embedded in this container. The browser subscribes over the public
-  # SERVER_NAME address (usually HTTPS), but the server also has to publish to the hub
-  # from inside the container. Publishing over the public HTTPS address via loopback is
-  # fragile: it relies on Caddy's short-lived internal-CA certificate for the loopback
-  # host, and during container (re)start and certificate rotation the TLS handshake
-  # intermittently fails with "tlsv1 alert internal error", dropping live updates.
-  #
-  # Instead, publish over a plaintext HTTP listener bound to a loopback-only,
-  # unpublished port. Caddy's "local" Mercure transport is process-global, so a publish
-  # on this listener reaches subscribers connected via the public address - without TLS,
-  # certificate lifecycle or HTTPS redirects. Honors an explicit internalHubUrl override
-  # (in which case no extra listener is added).
-  #
-  # IPv4 loopback only: on hosts with IPv6 disabled the container has no ::1, and a
-  # listener bound to it would make Caddy fail to start. 127.0.0.1 exists everywhere.
-  if [ -z "${HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL}" ]; then
-    _mercure_internal_port="${HUMHUB_DOCKER__MERCURE_INTERNAL_PORT:-9080}"
-    export HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__INTERNAL_HUB_URL="http://127.0.0.1:${_mercure_internal_port}/.well-known/mercure"
-    export CADDY_EXTRA_CONFIG+="$(cat <<EOF
-
-# Internal Mercure publish endpoint: plaintext HTTP, bound to IPv4 loopback only on an
-# unpublished port. Shares the process-global "local" transport with the public hub
-# so server-side publishing avoids the fragile loopback TLS handshake.
-http://127.0.0.1:${_mercure_internal_port} {
-      bind 127.0.0.1
-      mercure {
-            transport local
-            publisher_jwt {env.MERCURE_SECRET_PUB} HS256
-            subscriber_jwt {env.MERCURE_SECRET_SUB} HS256
-      }
-}
-EOF
-)"
-  fi
-
   mkdir -p /data/caddy; chown www-data:www-data /data/caddy
   export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
       # Enable Mercure
