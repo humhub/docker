@@ -39,11 +39,13 @@ cp -rn /opt/humhub/uploads/ /data/
 # Remove the default theme if it still exists (e.g. after an upgrade from an older version).
 rm -rf /data/themes/HumHub
 
-#--- Check Permissions
-chown -R www-data:www-data /app/runtime
-chown -R www-data:www-data /data/*
-find /app/runtime/ -type d -exec chmod u=rwx,go=rx {} + -o -type f -exec chmod u=rw,go=r {} +
-find /data/ -type d -exec chmod u=rwx,go=rx {} + -o -type f -exec chmod u=rw,go=r {} +
+#--- Check Permissions (ownership + owner access only; group/other bits are set by HumHub or the host admin)
+# Single pass; only touches entries that need fixing (no metadata writes / ctime changes on correct entries)
+find /app/runtime /data/* \
+  \( ! -user www-data -o ! -group www-data \) -exec chown -h www-data:www-data {} + , \
+  \( \( -type d ! -perm -u=rwx \) -o \( -type f ! -perm -u=rw \) \) -exec chmod u+rwX {} +
+# Let www-data traverse /data without taking ownership of a bind-mounted host directory
+chmod o+x /data
 
 #----------------------------------------------------------------------
 # HUMHUB INIT
