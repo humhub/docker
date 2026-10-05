@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 5, 2026
+---------------
+- Fix: Enable Mercure protocol_version_compatibility 8 so the hub starts with FrankenPHP 1.13 / Mercure 1.0 (transitional until HumHub core supports Mercure 1.0 tokens)
+
 October 1, 2026
 ---------------
 - Enh: Entrypoint only fixes ownership and owner permissions, keeping group/other modes set by HumHub or the host admin
