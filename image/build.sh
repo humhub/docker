@@ -1,1 +1,41 @@
-docker build --build-arg HUMHUB_GIT_BRANCH=develop --tag humhub:local .
+#!/usr/bin/env bash
+# Build the HumHub image locally.
+#
+# Usage: ./build.sh [HUMHUB_REF] [IMAGE_TAG]
+#
+#   HUMHUB_REF  Branch or tag of humhub/humhub to build. Defaults to the ref
+#               implied by the current docker branch, using the same mapping
+#               as the nightly workflow:
+#                 main      -> master
+#                 develop   -> develop
+#                 v<x>.<y>  -> v<x>.<y>   (maintenance branches)
+#                 <other>   -> develop    (feature branches, detached HEAD)
+#   IMAGE_TAG   Image tag to apply. Defaults to humhub:local, which is what
+#               compose.yml runs.
+#
+# Examples:
+#   ./build.sh                    # follow the current docker branch
+#   ./build.sh v1.19.0            # build a release tag
+#   ./build.sh master humhub:local-master
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+DOCKER_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+case "$DOCKER_BRANCH" in
+  main)         DEFAULT_REF="master" ;;
+  develop)      DEFAULT_REF="develop" ;;
+  v[0-9]*.[0-9]*) DEFAULT_REF="$DOCKER_BRANCH" ;;
+  *)            DEFAULT_REF="develop" ;;
+esac
+
+HUMHUB_REF="${1:-$DEFAULT_REF}"
+IMAGE_TAG="${2:-humhub:local}"
+
+echo "docker branch: ${DOCKER_BRANCH:-<unknown>}"
+echo "humhub ref:    $HUMHUB_REF"
+echo "image tag:     $IMAGE_TAG"
+
+docker build . \
+  --build-arg HUMHUB_GIT_BRANCH="$HUMHUB_REF" \
+  --tag "$IMAGE_TAG"

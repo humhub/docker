@@ -1,12 +1,19 @@
 #---------------------------------------------------------------
 # FOR DEV USAGE ONLY!
+#
+# This stack runs a locally built image. Build it first with
+# ./build.sh, which tags it humhub:local and picks the HumHub
+# branch matching the checked out docker branch:
+#
+#   docker branch main    -> HumHub master
+#   docker branch develop -> HumHub develop
+#
+# Set HUMHUB_IMAGE to run a differently tagged local image.
 #---------------------------------------------------------------
 
 services:
   humhub:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${HUMHUB_IMAGE:-humhub:local}
     ports:
       - "80:80"
       - "443:443"

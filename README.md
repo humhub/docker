@@ -101,6 +101,7 @@ Your instance installer will be available at:
 - [Custom TLS Settings](docs/custom-tls.md)
 - [Custom robots.txt](docs/robots-txt.md)
 - [Logging](docs/logging.md)
+- [Development](docs/development.md)
 
 
 
