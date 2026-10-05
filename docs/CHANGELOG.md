@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 5, 2026
+---------------
+- Fix: Enable Mercure protocol_version_compatibility 8 so the hub starts with FrankenPHP 1.13 / Mercure 1.0 (transitional until HumHub core supports Mercure 1.0 tokens)
+
 September 24, 2026
 ------------------
 - Update CLI docs to match the HumHub admin console guide
