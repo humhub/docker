@@ -4,6 +4,8 @@ Changelog
 October 5, 2026
 ---------------
 - Fix: Enable Mercure protocol_version_compatibility 8 so the hub starts with FrankenPHP 1.13 / Mercure 1.0 (transitional until HumHub core supports Mercure 1.0 tokens)
+- Local build script derives the HumHub ref from the docker branch and accepts ref and tag arguments; removed run.sh in favour of compose.yml
+- Dev compose.yml runs the locally built humhub:local image (override via HUMHUB_IMAGE) instead of building itself
 
 September 24, 2026
 ------------------
