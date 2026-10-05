@@ -4,6 +4,7 @@ Changelog
 October 5, 2026
 ---------------
 - Fix: Enable Mercure protocol_version_compatibility 8 so the hub starts with FrankenPHP 1.13 / Mercure 1.0 (transitional until HumHub core supports Mercure 1.0 tokens)
+- Fix: Give both embedded Mercure hubs the same name; Mercure 1.0 allows one unnamed hub only and pools the local transport by name, so internal publishes reach public subscribers
 
 October 1, 2026
 ---------------
