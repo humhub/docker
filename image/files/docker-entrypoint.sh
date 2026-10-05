@@ -185,6 +185,9 @@ if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
 http://127.0.0.1:${_mercure_internal_port} {
       bind 127.0.0.1
       mercure {
+            # name and protocol_version_compatibility: see the public mercure block below
+            name humhub
+            protocol_version_compatibility 8
             transport local
             publisher_jwt {env.MERCURE_SECRET_PUB} HS256
             subscriber_jwt {env.MERCURE_SECRET_SUB} HS256
@@ -200,7 +203,11 @@ EOF
       # protocol_version_compatibility 8 is transitional: Mercure 1.0 (FrankenPHP >= 1.13)
       # only accepts publisher_jwt/subscriber_jwt and the 0.x token/topic format HumHub
       # core currently uses in compatibility mode. Drop it once core speaks Mercure 1.0.
+      # name: Mercure 1.0 allows only one unnamed hub and pools the "local" transport by
+      # hub name. The internal publish listener above must carry the same name, otherwise
+      # its publishes never reach subscribers of this public hub.
       mercure {
+            name humhub
             protocol_version_compatibility 8
             transport local
             publisher_jwt {env.MERCURE_SECRET_PUB} HS256
