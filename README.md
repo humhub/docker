@@ -100,6 +100,7 @@ Your instance installer will be available at:
 - [Redis Integration](docs/redis.md)
 - [Custom TLS Settings](docs/custom-tls.md)
 - [Logging](docs/logging.md)
+- [Development](docs/development.md)
 
 
 
