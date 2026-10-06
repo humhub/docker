@@ -5,6 +5,7 @@ October 6, 2026
 ---------------
 - Enh: Set OCI image labels (title, source, revision, created, HumHub core revision, immutable tag) instead of inheriting the FrankenPHP base image labels
 - Enh: Expose image revision, created, tag, platform and HumHub core revision to core as HUMHUB_CONFIG__PARAMS__DOCKER__* environment variables
+- Added LICENSE (AGPL-3.0-only) and declare the HumHub dual license in the image licenses label
 
 October 5, 2026
 ---------------
