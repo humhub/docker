@@ -117,7 +117,7 @@ ENV HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_REVISION="${IMAGE_REVISION}" \
 # --- Image labels ---
 # OCI annotations for this image, overriding the inherited FrankenPHP base image labels
 LABEL org.opencontainers.image.title="HumHub" \
-      org.opencontainers.image.description="HumHub – Official Docker Image" \
+      org.opencontainers.image.description="HumHub is an open source social network platform with a wide variety of use cases such as social intranet, community or collaboration platform." \
       org.opencontainers.image.url="https://www.humhub.com" \
       org.opencontainers.image.documentation="https://github.com/humhub/docker/blob/main/README.md" \
       org.opencontainers.image.source="https://github.com/humhub/docker" \
