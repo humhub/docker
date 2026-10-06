@@ -67,7 +67,16 @@ RUN mkdir -p /data \
     && ln -s /data/themes/ /app/public/themes \
     && ln -s /opt/humhub/static/ /app/public/static
 
+# --- Build metadata ---
+# Build arguments set by the CI workflows and build.sh; TARGETPLATFORM is set by BuildKit
+ARG HUMHUB_GIT_REVISION=""
+ARG IMAGE_REVISION=""
+ARG IMAGE_CREATED=""
+ARG IMAGE_TAG=""
+ARG TARGETPLATFORM
+
 # --- Environment ---
+# Runtime defaults for HumHub and the entrypoint
 ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__MERCURE_ENABLE=true \
     HUMHUB_CONFIG__COMPONENTS__URL_MANAGER__SHOW_SCRIPT_NAME=false \
@@ -98,18 +107,17 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
     HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT=true
 
-# --- Image metadata ---
-# Static labels describe this image (the base image labels would otherwise be
-# inherited and describe FrankenPHP). Dynamic values are passed by the CI
-# workflows and build.sh as build arguments; they default to empty.
-ARG HUMHUB_GIT_REVISION=""
-ARG IMAGE_REVISION=""
-ARG IMAGE_CREATED=""
-ARG IMAGE_TAG=""
-# Set automatically by BuildKit, e.g. linux/amd64 or linux/arm64
-ARG TARGETPLATFORM
+# Build metadata for HumHub, available as Yii::$app->params['docker'][...] (camelCase keys)
+ENV HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_REVISION="${IMAGE_REVISION}" \
+    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_CREATED="${IMAGE_CREATED}" \
+    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_TAG="${IMAGE_TAG}" \
+    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_PLATFORM="${TARGETPLATFORM}" \
+    HUMHUB_CONFIG__PARAMS__DOCKER__CORE_REVISION="${HUMHUB_GIT_REVISION}"
+
+# --- Image labels ---
+# OCI annotations for this image, overriding the inherited FrankenPHP base image labels
 LABEL org.opencontainers.image.title="HumHub" \
-      org.opencontainers.image.description="HumHub social network platform on FrankenPHP" \
+      org.opencontainers.image.description="HumHub – Official Docker Image" \
       org.opencontainers.image.url="https://www.humhub.com" \
       org.opencontainers.image.documentation="https://github.com/humhub/docker/blob/main/README.md" \
       org.opencontainers.image.source="https://github.com/humhub/docker" \
@@ -120,14 +128,6 @@ LABEL org.opencontainers.image.title="HumHub" \
       org.opencontainers.image.created="${IMAGE_CREATED}" \
       com.humhub.core.revision="${HUMHUB_GIT_REVISION}" \
       com.humhub.image.tag="${IMAGE_TAG}"
-
-# Expose the build metadata to HumHub as Yii::$app->params['docker'][...]
-# (imageRevision, imageCreated, imageTag, imagePlatform, coreRevision)
-ENV HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_REVISION="${IMAGE_REVISION}" \
-    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_CREATED="${IMAGE_CREATED}" \
-    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_TAG="${IMAGE_TAG}" \
-    HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_PLATFORM="${TARGETPLATFORM}" \
-    HUMHUB_CONFIG__PARAMS__DOCKER__CORE_REVISION="${HUMHUB_GIT_REVISION}"
 
 # --- Startup ---
 CMD ["/docker-entrypoint.sh"]
