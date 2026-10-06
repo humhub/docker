@@ -69,14 +69,25 @@ jobs:
     - name: Generate immutable tag
       id: immutable
       run: |
-        TIMESTAMP=$(date -u '+%Y%m%d%H%M%S')
-        GIT_SHA=$(git ls-remote https://github.com/humhub/humhub.git "refs/tags/${{ steps.resolve.outputs.release_tag }}" | cut -c1-7)
-        echo "value=${{ steps.resolve.outputs.version }}-${TIMESTAMP}-${GIT_SHA}" >> $GITHUB_OUTPUT
+        # One timestamp for the immutable tag and the created label so both agree
+        NOW=$(date -u +%s)
+        TIMESTAMP=$(date -u -d @$NOW '+%Y%m%d%H%M%S')
+        CREATED=$(date -u -d @$NOW '+%Y-%m-%dT%H:%M:%SZ')
+        GIT_SHA=$(git ls-remote https://github.com/humhub/humhub.git "refs/tags/${{ steps.resolve.outputs.release_tag }}" | cut -f1)
+        echo "value=${{ steps.resolve.outputs.version }}-${TIMESTAMP}-${GIT_SHA:0:7}" >> $GITHUB_OUTPUT
+        echo "core_sha=${GIT_SHA}"                >> $GITHUB_OUTPUT
+        echo "created=${CREATED}"                 >> $GITHUB_OUTPUT
+        # Commit of the checked out docker branch (github.sha would be the dispatcher's main commit)
+        echo "docker_sha=$(git rev-parse HEAD)"   >> $GITHUB_OUTPUT
 
     - name: Build the Docker Image
       run: |
         cd image; docker build . --file Dockerfile \
           --build-arg HUMHUB_GIT_BRANCH=${{ steps.resolve.outputs.release_tag }} \
+          --build-arg HUMHUB_GIT_REVISION=${{ steps.immutable.outputs.core_sha }} \
+          --build-arg IMAGE_REVISION=${{ steps.immutable.outputs.docker_sha }} \
+          --build-arg IMAGE_CREATED=${{ steps.immutable.outputs.created }} \
+          --build-arg IMAGE_TAG=${{ steps.immutable.outputs.value }} \
           --tag humhub/humhub:${{ steps.resolve.outputs.version }} \
           --tag humhub/humhub:${{ steps.immutable.outputs.value }}
 

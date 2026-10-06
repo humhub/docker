@@ -103,5 +103,12 @@ Your instance installer will be available at:
 - [Logging](docs/logging.md)
 - [Development](docs/development.md)
 
+---
+
+## License
+
+This repository is licensed under the GNU Affero General Public License, version 3 only (AGPL-3.0-only), see [LICENSE](LICENSE).
+HumHub itself is dual-licensed under AGPL-3.0-only or the HumHub Commercial License, see [humhub.com/licenses](https://www.humhub.com/licenses/).
+
 
 

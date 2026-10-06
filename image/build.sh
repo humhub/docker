@@ -31,11 +31,16 @@ esac
 
 HUMHUB_REF="${1:-$DEFAULT_REF}"
 IMAGE_TAG="${2:-humhub:local}"
+HUMHUB_GIT_REVISION="$(git ls-remote https://github.com/humhub/humhub.git "refs/heads/$HUMHUB_REF" "refs/tags/$HUMHUB_REF" 2>/dev/null | head -n1 | cut -f1 || true)"
 
 echo "docker branch: ${DOCKER_BRANCH:-<unknown>}"
-echo "humhub ref:    $HUMHUB_REF"
+echo "humhub ref:    $HUMHUB_REF ${HUMHUB_GIT_REVISION:+($HUMHUB_GIT_REVISION)}"
 echo "image tag:     $IMAGE_TAG"
 
 docker build . \
   --build-arg HUMHUB_GIT_BRANCH="$HUMHUB_REF" \
+  --build-arg HUMHUB_GIT_REVISION="$HUMHUB_GIT_REVISION" \
+  --build-arg IMAGE_REVISION="$(git rev-parse HEAD 2>/dev/null || true)" \
+  --build-arg IMAGE_CREATED="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+  --build-arg IMAGE_TAG="${IMAGE_TAG##*:}" \
   --tag "$IMAGE_TAG"
