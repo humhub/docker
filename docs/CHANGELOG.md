@@ -1,6 +1,11 @@
 Changelog
 =========
 
+October 6, 2026
+---------------
+- Enh: Set OCI image labels (title, source, revision, created, HumHub core revision, immutable tag) instead of inheriting the FrankenPHP base image labels
+- Enh: Expose image revision, created, tag, platform and HumHub core revision to core as HUMHUB_CONFIG__PARAMS__DOCKER__* environment variables
+
 October 5, 2026
 ---------------
 - Fix: Enable Mercure protocol_version_compatibility 8 so the hub starts with FrankenPHP 1.13 / Mercure 1.0 (transitional until HumHub core supports Mercure 1.0 tokens)
