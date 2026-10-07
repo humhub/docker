@@ -25,6 +25,22 @@ cd image
 
 Without arguments the HumHub ref is derived from the current docker branch using the mapping above. On feature branches or a detached HEAD the script falls back to `develop`. The image is tagged `humhub:local` unless a second argument is given.
 
+### Building for another platform
+
+Set `PLATFORM` to build for a platform other than the host, for example an arm64 image on an amd64 machine:
+
+```bash
+PLATFORM=linux/arm64 ./build.sh v1.19.0 humhub:local-arm64
+```
+
+This needs QEMU user-mode emulation registered via binfmt. Docker Desktop ships it; on Linux run once:
+
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+```
+
+Only the runtime stage is emulated, the HumHub build stage runs natively. Expect the emulated stage to take roughly ten times longer than a native build. The result is a single-platform image in the local image store; copy it to a target machine with `docker save` and `docker load`.
+
 ## Dev stack with Docker Compose
 
 `image/compose.yml` starts the locally built `humhub:local` image together with a MariaDB. It does not build the image itself, so run `build.sh` first. The stack is meant for development only.

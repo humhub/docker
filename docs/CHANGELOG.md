@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 7, 2026
+---------------
+- Enh: build.sh accepts PLATFORM (e.g. linux/arm64) for cross-platform local builds via QEMU
+
 October 6, 2026
 ---------------
 - Enh: Set OCI image labels (title, source, revision, created, HumHub core revision, immutable tag) instead of inheriting the FrankenPHP base image labels
