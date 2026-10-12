@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 12, 2026
+----------------
+- Enh: Add bcmath, gmp and sockets PHP extensions for modules; document how to add further extensions
+
 October 7, 2026
 ---------------
 - Enh: build.sh accepts PLATFORM (e.g. linux/arm64) for cross-platform local builds via QEMU
