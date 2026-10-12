@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y supervisor bash procps joe mariadb-clie
 
 WORKDIR /app
 
+# Extensions needed by HumHub core, plus small ones commonly needed by modules
+# (bcmath, gmp, sockets). Additional extensions: see docs/php-extensions.md
 RUN install-php-extensions \
 	pdo_mysql \
 	gd \
@@ -39,7 +41,10 @@ RUN install-php-extensions \
 	ldap \
 	zip \
 	opcache \
-	apcu
+	apcu \
+	bcmath \
+	gmp \
+	sockets
 
 COPY --from=builder /opt/humhub /opt/humhub
 
