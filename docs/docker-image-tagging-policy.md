@@ -251,15 +251,19 @@ Docker Hub.
 
 ### What gets deleted
 
-An image (digest) is considered **unused** when **all** of its tags match the immutable tag
-pattern:
+An image (digest) is considered **unused** when **all** of its tags match the immutable nightly
+tag pattern:
 
 ```
-<branch>-YYYYMMDDHHMMSS-<sha7>
+<branch>-nightly-YYYYMMDDHHMMSS-<sha7>
 ```
 
-An image is considered **active** as long as it carries at least one mutable tag
-(e.g. `stable-nightly`, `1.17-nightly`). Active images are never deleted.
+An image is considered **active** as long as it carries at least one other tag, either a mutable
+tag (e.g. `stable-nightly`, `1.17-nightly`) or an immutable release tag. Active images are never
+deleted. Release images are always kept as pinnable, audit-safe references, even after a rebuild
+moved their version tag to a newer image.
+
+For multi-arch images, the per-platform manifests of a deleted image index are deleted with it.
 
 In practice this means: when a new nightly build runs, the previous mutable tag is moved to the
 new digest and the old digest becomes immutable-only. The cleanup job then removes it on its next

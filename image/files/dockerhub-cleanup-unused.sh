@@ -6,11 +6,12 @@ set -euo pipefail
 # Docker Hub - Delete unused images
 #
 # An image is considered "unused" when all of its tags match the immutable
-# tag format (<branch>-YYYYMMDDHHMMSS-<sha>) and none of its tags is a
-# mutable reference such as "master" or "develop".
+# nightly tag format (<branch>-nightly-YYYYMMDDHHMMSS-<sha>) and none of its
+# tags is a mutable reference such as "stable-nightly".
 #
 # An image is considered "used" when it carries at least one tag that does
-# NOT match the immutable tag pattern, indicating it is actively referenced.
+# NOT match the immutable nightly tag pattern. Release images (immutable
+# release tags) are always kept as pinnable, audit-safe references.
 #
 # Usage:
 #   ./dockerhub-cleanup-unused.sh [OPTIONS]
@@ -130,14 +131,19 @@ echo ""
 # Fetch all tags (pagination) and identify unused
 #
 # All tags are fetched and grouped by digest. A digest is "unused" when
-# every tag associated with it matches the immutable tag pattern:
+# every tag associated with it matches the immutable nightly tag pattern:
 #
-#   ^.+-[0-9]{14}-[0-9a-f]{7}$
+#   ^.+-nightly-[0-9]{14}-[0-9a-f]{7}$
 #
-# i.e. <branch>-YYYYMMDDHHMMSS-<short-sha>
+# i.e. <branch>-nightly-YYYYMMDDHHMMSS-<short-sha>
 #
-# If a digest has at least one tag that does NOT match (e.g. "master" or
-# "develop"), it is considered actively used and skipped.
+# If a digest has at least one tag that does NOT match (e.g. "stable-nightly"
+# or an immutable release tag), it is considered actively used and skipped.
+#
+# Multi-arch tags point to an image index whose per-platform manifests are
+# untagged and never appear as tag digests. They are listed under the tag's
+# "images" and deleted together with their index, unless a used digest
+# still references them.
 #################################################
 echo "Fetching tags..."
 
@@ -165,29 +171,47 @@ print(json.load(sys.stdin).get('next') or '')
 " 2>/dev/null || true)
 done
 
+# Each entry: "<digest> [<platform digest> ...]"
 UNUSED_DIGESTS=()
-while IFS= read -r digest; do
-    [[ -n "$digest" ]] && UNUSED_DIGESTS+=("$digest")
+while IFS= read -r line; do
+    [[ -n "$line" ]] && UNUSED_DIGESTS+=("$line")
 done < <(echo "$ALL_TAGS_JSON" | python3 -c "
 import sys, json, re
 
-IMMUTABLE = re.compile(r'^.+-[0-9]{14}-[0-9a-f]{7}$')
+IMMUTABLE = re.compile(r'^.+-nightly-[0-9]{14}-[0-9a-f]{7}$')
 
 tags = json.load(sys.stdin)
 
-# Group tag names by digest
+# Group tag names and platform manifests by digest
 digest_tags = {}
+digest_children = {}
 for t in tags:
     digest = t.get('digest', '')
     name   = t.get('name', '')
     if not digest:
         continue
     digest_tags.setdefault(digest, []).append(name)
+    children = digest_children.setdefault(digest, set())
+    for image in t.get('images') or []:
+        child = image.get('digest')
+        if child and child != digest:
+            children.add(child)
 
 # A digest is unused when ALL its tags are immutable
-for digest, names in digest_tags.items():
-    if all(IMMUTABLE.match(n) for n in names):
-        print(digest)
+unused = [d for d, names in digest_tags.items() if all(IMMUTABLE.match(n) for n in names)]
+
+# Never delete a platform manifest that is still referenced by a used digest
+protected = set()
+for digest in digest_tags:
+    if digest not in unused:
+        protected.add(digest)
+        protected.update(digest_children[digest])
+
+seen = set()
+for digest in unused:
+    children = sorted(digest_children[digest] - protected - seen)
+    seen.update(children)
+    print(' '.join([digest] + children))
 ")
 
 #################################################
@@ -209,22 +233,38 @@ echo ""
 DELETED=0
 FAILED=0
 
-for DIGEST in "${UNUSED_DIGESTS[@]}"; do
+delete_manifest() {
+    local digest="$1"
+    local http_status
+    http_status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+        -H "Authorization: Bearer $REGISTRY_TOKEN" \
+        "https://registry-1.docker.io/v2/$NAMESPACE/$REPOSITORY/manifests/$digest")
+
+    if [[ "$http_status" == "202" ]]; then
+        echo "  Deleted."
+        (( DELETED++ )) || true
+        return 0
+    fi
+    echo "  WARNING: Unexpected HTTP status $http_status for digest $digest" >&2
+    (( FAILED++ )) || true
+    return 1
+}
+
+for ENTRY in "${UNUSED_DIGESTS[@]}"; do
+    read -r DIGEST CHILDREN <<< "$ENTRY"
     if [[ "$DRY_RUN" == true ]]; then
         echo "[DRY-RUN] Would delete: $DIGEST"
+        for CHILD in $CHILDREN; do
+            echo "[DRY-RUN]   Would delete platform manifest: $CHILD"
+        done
     else
         echo "Deleting: $DIGEST"
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-            -H "Authorization: Bearer $REGISTRY_TOKEN" \
-            "https://registry-1.docker.io/v2/$NAMESPACE/$REPOSITORY/manifests/$DIGEST")
-
-        if [[ "$HTTP_STATUS" == "202" ]]; then
-            echo "  Deleted."
-            (( DELETED++ )) || true
-        else
-            echo "  WARNING: Unexpected HTTP status $HTTP_STATUS for digest $DIGEST" >&2
-            (( FAILED++ )) || true
-        fi
+        # Platform manifests are only removed once their index is gone
+        delete_manifest "$DIGEST" || continue
+        for CHILD in $CHILDREN; do
+            echo "  Deleting platform manifest: $CHILD"
+            delete_manifest "$CHILD" || true
+        done
     fi
 done
 
