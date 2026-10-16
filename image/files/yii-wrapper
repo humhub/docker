@@ -2,9 +2,9 @@
 set -e
 
 if [ "$(id -u)" -eq 0 ]; then
-  exec su www-data -s /app/bin/yii -- "$@"
+  exec su www-data -s /app/protected/yii -- "$@"
 elif [ "$(id -u -n)" = "www-data" ]; then
-  exec /app/bin/yii "$@"
+  exec /app/protected/yii "$@"
 else
   echo "This wrapper must be run as root or www-data"
   exit 1

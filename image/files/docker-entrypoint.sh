@@ -27,12 +27,8 @@ echo
 #----------------------------------------------------------------------
 
 #--- Ensure mounted data folder structure
-mkdir -p /data/{uploads,assets,logs,config,modules,modules-custom,themes,caddy}
+mkdir -p /data/{uploads,logs,config,modules,modules-custom,themes,caddy}
 touch /data/logs/app.log
-
-#--- Copy defaults (if not exist) to mounted data folder
-cp -rn /opt/humhub/protected/config/ /data/
-cp -rn /opt/humhub/uploads/ /data/
 
 # Since HumHub v1.19, the default theme is no longer located in the themes folder.
 # The themes folder is now reserved for custom themes only.
@@ -41,7 +37,7 @@ rm -rf /data/themes/HumHub
 
 #--- Check Permissions (ownership + owner access only; group/other bits are set by HumHub or the host admin)
 # Single pass; only touches entries that need fixing (no metadata writes / ctime changes on correct entries)
-find /app/runtime /data/* \
+find /app/protected/runtime /app/public/assets /data/* \
   \( ! -user www-data -o ! -group www-data \) -exec chown -h www-data:www-data {} + , \
   \( \( -type d ! -perm -u=rwx \) -o \( -type f ! -perm -u=rw \) \) -exec chmod u+rwX {} +
 # Let www-data traverse /data without taking ownership of a bind-mounted host directory
@@ -64,12 +60,6 @@ export HUMHUB_CONFIG__MODULES__INSTALLER__ENABLE_AUTO_SETUP="$AUTO_SETUP"
 #----------------------------------------------------------------------
 # Caddy: Configuration
 #----------------------------------------------------------------------
-export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
-  # Forbidden Directories
-  respond /uploads/file/* 403
-EOF
-)"
-
 #--- Logging: server runtime/error log (Caddy default logger), see docs/logging.md
 if [ "$HUMHUB_DOCKER__SERVER_LOG" != "true" ]; then
   _server_log_output="output discard"
@@ -120,9 +110,10 @@ export HUMHUB_FIXED_SETTINGS__FILE__USE_X_SENDFILE=1
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
     # Enable Sendfile
     intercept {
-        @accel header X-Accel-Redirect *
+        # Uploads are outside the document root, so HumHub hands out their absolute path
+        @accel header X-Accel-Redirect /data/uploads/*
         handle_response @accel {
-            root /app/public/
+            root /
             rewrite * {resp.header.X-Accel-Redirect}
             method * GET
             header -X-Accel-Redirect
