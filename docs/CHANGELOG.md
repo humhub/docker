@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 16, 2026
+----------------
+- Fix: humhub-simple-healthcheck.sh derives its URL from SERVER_NAME (plain HTTP for `http://…` or `:port`, with the port), so a container behind a TLS-terminating reverse proxy can report healthy; HUMHUB_DOCKER__HEALTHCHECK_URL overrides it, see docs/healthcheck.md
+
 October 12, 2026
 ----------------
 - Enh: Add bcmath, gmp and sockets PHP extensions for modules; document how to add further extensions
