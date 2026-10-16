@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 16, 2026
+----------------
+- Fix: humhub-startup.sh applies pending module migrations after module/update-all, so a module update-all did not touch no longer leaves humhub-wait-ready.sh (scheduler, workers) waiting for ever
+
 October 12, 2026
 ----------------
 - Enh: Add bcmath, gmp and sockets PHP extensions for modules; document how to add further extensions
