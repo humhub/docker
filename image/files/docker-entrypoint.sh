@@ -30,6 +30,9 @@ echo
 mkdir -p /data/{uploads,logs,config,modules,modules-custom,themes,caddy}
 touch /data/logs/app.log
 
+#--- Provide the example configuration files of this HumHub version next to the own ones
+cp /app/config/*.example.php /data/config/
+
 # Since HumHub v1.19, the default theme is no longer located in the themes folder.
 # The themes folder is now reserved for custom themes only.
 # Remove the default theme if it still exists (e.g. after an upgrade from an older version).

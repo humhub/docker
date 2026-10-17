@@ -23,7 +23,7 @@ Where the restore guide uses the content of a Docker backup archive, you take th
 | Data | Source (existing installation) | Target (`§PATH_TO_HUMHUBDATA§`) |
 |---|---|---|
 | Database | Dump of your existing database | see [Database](#database) |
-| Configuration | `protected/config/` | `config/` |
+| Configuration | `protected/config/` (`config/` since HumHub 1.20) | `config/` |
 | Uploaded files | `uploads/` | `uploads/` |
 | Custom themes | `themes/<YourTheme>/` | `themes/<YourTheme>/` |
 | Custom modules | `protected/modules/<YourModule>/` | `modules-custom/<YourModule>/` |
@@ -53,8 +53,8 @@ matching command, e.g. `bzcat` or `xzcat`.
 
 ### Configuration
 
-Copy the files from `protected/config/` (e.g. `common.php`, `web.php`, `console.php`, `dynamic.php`) into
-`§PATH_TO_HUMHUBDATA§/config/`.
+Copy the files from `protected/config/` (`config/` since HumHub 1.20, e.g. `common.php`, `web.php`, `console.php`,
+`dynamic.php`) into `§PATH_TO_HUMHUBDATA§/config/`.
 
 - The `HUMHUB_CONFIG__...` environment variables are applied after the configuration files, so the database settings
   of your existing installation (usually in `dynamic.php`) are superseded by those of your Docker stack.
