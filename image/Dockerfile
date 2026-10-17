@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && npm install -g grunt-cli less less-plugin-clean-css
 
-WORKDIR /opt/humhub
+WORKDIR /app
 
 RUN git clone https://github.com/humhub/humhub.git . && \
     git checkout ${HUMHUB_GIT_BRANCH} && \
@@ -46,31 +46,27 @@ RUN install-php-extensions \
 	gmp \
 	sockets
 
-COPY --from=builder /opt/humhub /opt/humhub
+COPY --from=builder /app /app
 
 # --- Supervisor config ---
 COPY files/supervisord.conf /etc/supervisor/conf.d/humhub.conf
 
 # --- HumHub scripts ---
-COPY files/index.php /app/public/
 COPY files/yii-wrapper /app/yii
 COPY files/docker-entrypoint.sh /
-COPY files/yii files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh files/humhub-app-log.sh files/humhub-wait-ready.sh /app/bin/
-RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh /app/bin/humhub-app-log.sh /app/bin/humhub-wait-ready.sh
+COPY files/humhub-worker.sh files/humhub-scheduler.sh files/humhub-startup.sh files/humhub-backup.sh files/humhub-simple-healthcheck.sh files/humhub-app-log.sh files/humhub-wait-ready.sh /app/bin/
+RUN chmod +x /docker-entrypoint.sh /app/yii /app/bin/humhub-worker.sh /app/bin/humhub-scheduler.sh /app/bin/humhub-startup.sh /app/bin/humhub-backup.sh /app/bin/humhub-simple-healthcheck.sh /app/bin/humhub-app-log.sh /app/bin/humhub-wait-ready.sh
 
 
 RUN setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp; \
     chown -R www-data:www-data /config/caddy /data/caddy
 
 # --- HumHub paths ---
+# HumHub lives in /app and is served from /app/public as shipped. Everything that has to survive
+# a container update is moved to /data through the environment below; the runtime directory and
+# the published assets are regenerated and stay in the container.
 RUN mkdir -p /data \
-    && mkdir -p /app/runtime/ \
-    && rm -rf /app/runtime/logs \
-    && ln -s /data/logs/ /app/runtime/logs \
-    && ln -s /data/uploads/ /app/public/uploads \
-    && ln -s /data/assets/ /app/public/assets \
-    && ln -s /data/themes/ /app/public/themes \
-    && ln -s /opt/humhub/static/ /app/public/static
+    && chown -R www-data:www-data /app/protected/runtime /app/public/assets
 
 # --- Build metadata ---
 # Build arguments set by the CI workflows and build.sh; TARGETPLATFORM is set by BuildKit
@@ -90,11 +86,10 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_CONFIG__MODULES__MARKETPLACE__MODULE_BLACKLIST='["updater"]' \
     HUMHUB_CONFIG__MODULES__MARKETPLACE__MODULES_PATH=/data/modules \
     HUMHUB_CONFIG__PARAMS__MODULE_AUTOLOAD_PATHS='["/data/modules-custom", "/data/modules"]' \
-    HUMHUB_CONFIG__RUNTIME_PATH=/app/runtime \
-    HUMHUB_ALIASES__WEBROOT=/app/public \
-    HUMHUB_ALIASES__APP=/opt/humhub/protected \
     HUMHUB_ALIASES__CONFIG=/data/config \
-    HUMHUB_ALIASES__HUMHUB=/opt/humhub/protected/humhub \
+    HUMHUB_ALIASES__LOGS=/data/logs \
+    HUMHUB_ALIASES__THEMES=/data/themes \
+    HUMHUB_CONFIG__COMPONENTS__FS__MOUNTS__DATA__PATH=/data/uploads \
     HUMHUB_DOCKER__AUTOSTART_FRANKENPHP=true \
     HUMHUB_DOCKER__AUTOSTART_SCHEDULER=true \
     HUMHUB_DOCKER__AUTOSTART_WORKER=true \

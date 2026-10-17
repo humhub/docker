@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 16, 2026
+----------------
+- Enh: Build against HumHub 1.20: HumHub lives in `/app` and is served from `/app/public` as shipped, without own entry scripts or links; configuration, logs, themes and uploads are moved to `/data` through environment variables (`HUMHUB_ALIASES__CONFIG`, `HUMHUB_ALIASES__LOGS`, `HUMHUB_ALIASES__THEMES`, `HUMHUB_CONFIG__COMPONENTS__FS__MOUNTS__DATA__PATH`, requires humhub/humhub#8592). Published assets stay in the container and are regenerated, so `/data/assets` is no longer used and can be deleted. File downloads are handed to the web server from `/data/uploads` directly. The example configuration files are refreshed in `/data/config` on every start
+
 October 12, 2026
 ----------------
 - Enh: Add bcmath, gmp and sockets PHP extensions for modules; document how to add further extensions
