@@ -96,6 +96,7 @@ Your instance installer will be available at:
 - [Backup and Restore](docs/backup-restore.md)
 - [Migrate to Docker](docs/migrate-to-docker.md)
 - [Custom Themes and Modules](docs/custom-themes-modules.md)
+- [PHP Configuration](docs/php-configuration.md)
 - [Additional PHP Extensions](docs/php-extensions.md)
 - [Running Without Docker Compose](docs/manual-run.md)
 - [Redis Integration](docs/redis.md)

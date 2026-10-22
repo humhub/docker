@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 21, 2026
+----------------
+- Enh: Move default PHP settings into a built-in ini file applied to all processes; override via mounted ini file or FRANKENPHP_CONFIG
+
 October 16, 2026
 ----------------
 - Fix: humhub-startup.sh applies pending module migrations after module/update-all, so a module update-all did not touch no longer leaves humhub-wait-ready.sh (scheduler, workers) waiting for ever
