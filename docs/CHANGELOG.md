@@ -3,7 +3,7 @@ Changelog
 
 October 16, 2026
 ----------------
-- Fix: humhub-simple-healthcheck.sh derives its URL from SERVER_NAME (plain HTTP for `http://…` or `:port`, with the port), so a container behind a TLS-terminating reverse proxy can report healthy; HUMHUB_DOCKER__HEALTHCHECK_URL overrides it, see docs/healthcheck.md
+- Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
 
 October 12, 2026
 ----------------

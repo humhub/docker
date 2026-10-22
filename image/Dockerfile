@@ -112,9 +112,8 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
     HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT=true
 
-# URL probed by /app/bin/humhub-simple-healthcheck.sh. Empty (the default) derives it from SERVER_NAME,
-# which is what decides how Caddy listens: https://localhost for the automatic-HTTPS default,
-# http://localhost[:port] for "http://..." or ":port" (TLS terminated by a reverse proxy).
+# URL probed by /app/bin/humhub-simple-healthcheck.sh. Empty (the default) derives it from the first
+# SERVER_NAME address, which is what decides how Caddy listens, and connects to it via 127.0.0.1.
 # Set it to probe another address or path instead, see docs/healthcheck.md
 ENV HUMHUB_DOCKER__HEALTHCHECK_URL=
 
