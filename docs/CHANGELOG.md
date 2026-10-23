@@ -1,9 +1,13 @@
 Changelog
 =========
 
-October 16, 2026
+October 23, 2026
 ----------------
 - Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
+
+October 16, 2026
+----------------
+- Fix: humhub-startup.sh applies pending module migrations after module/update-all, so a module update-all did not touch no longer leaves humhub-wait-ready.sh (scheduler, workers) waiting for ever
 
 October 12, 2026
 ----------------
