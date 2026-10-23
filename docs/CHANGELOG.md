@@ -1,8 +1,9 @@
 Changelog
 =========
 
-October 21, 2026
+October 23, 2026
 ----------------
+- Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
 - Enh: Move default PHP settings into a built-in ini file applied to all processes; override via mounted ini file or FRANKENPHP_CONFIG
 
 October 16, 2026
