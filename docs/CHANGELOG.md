@@ -1,9 +1,14 @@
 Changelog
 =========
 
+October 23, 2026
+----------------
+- Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
+
 October 16, 2026
 ----------------
 - Enh: Build against HumHub 1.20: HumHub lives in `/app` and is served from `/app/public` as shipped, without own entry scripts or links; configuration, logs, themes and uploads are moved to `/data` through environment variables (`HUMHUB_ALIASES__CONFIG`, `HUMHUB_ALIASES__LOGS`, `HUMHUB_ALIASES__THEMES`, `HUMHUB_CONFIG__COMPONENTS__FS__MOUNTS__DATA__PATH`, requires humhub/humhub#8592). Published assets stay in the container and are regenerated, so `/data/assets` is no longer used and can be deleted. File downloads are handed to the web server from `/data/uploads` directly. The example configuration files are refreshed in `/data/config` on every start
+- Fix: humhub-startup.sh applies pending module migrations after module/update-all, so a module update-all did not touch no longer leaves humhub-wait-ready.sh (scheduler, workers) waiting for ever
 
 October 12, 2026
 ----------------
