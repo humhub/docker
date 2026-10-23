@@ -112,6 +112,11 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_DOCKER__SERVER_LOG_FILE=/data/logs/server.log \
     HUMHUB_DOCKER__ENABLE_APP_LOG_TO_STDOUT=true
 
+# URL probed by /app/bin/humhub-simple-healthcheck.sh. Empty (the default) derives it from the first
+# SERVER_NAME address, which is what decides how Caddy listens, and connects to it via 127.0.0.1.
+# Set it to probe another address or path instead, see docs/healthcheck.md
+ENV HUMHUB_DOCKER__HEALTHCHECK_URL=
+
 # Build metadata for HumHub, available as Yii::$app->params['docker'][...] (camelCase keys)
 ENV HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_REVISION="${IMAGE_REVISION}" \
     HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_CREATED="${IMAGE_CREATED}" \
