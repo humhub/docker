@@ -35,25 +35,30 @@ Browsers block these as mixed content, which breaks for example:
 - file downloads and previews
 - theme assets, such as fonts and stylesheets
 
-Declare the IP range of your proxy as trusted:
+Declare the addresses of your proxy as trusted:
 
 ```yaml
     environment:
-      - HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS=["172.16.0.0/12"]
+      - HUMHUB_DOCKER__TRUSTED_PROXIES=172.16.0.0/12
 ```
 
 From these addresses, HumHub accepts the `X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Port` and
 `X-Forwarded-For` headers. This fixes all generated URLs at once, so there is no need to override single URLs such as
-`HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__HUB_URL`.
+`HUMHUB_CONFIG__COMPONENTS__LIVE__DRIVER__HUB_URL`. The container prints a notice at startup when `SERVER_NAME`
+is plain HTTP and no proxy is trusted.
 
-The `HUMHUB_WEB_CONFIG__` prefix applies the setting to web requests only. Do not use the usual `HUMHUB_CONFIG__`
-prefix here: it also configures the console application, whose request component has no such property, so every
-`yii` command fails, including the migrations at container start, the scheduler and the queue workers.
+The value is a list of IP addresses or CIDR ranges, separated by comma or space, or `private_ranges` for all
+private networks. `172.16.0.0/12` covers the subnets Docker allocates by default (`172.17.0.0/16` to
+`172.31.0.0/16`); check the actual subnet of the network the proxy uses to reach the container with
+`docker network inspect <network>`, and prefer that subnet (e.g. `172.18.0.0/16`) or the fixed address of the proxy.
 
-The value is a JSON list of addresses or CIDR ranges. `172.16.0.0/12` covers the subnets Docker allocates by
-default (`172.17.0.0/16` to `172.31.0.0/16`); check the actual subnet of the network the proxy uses to reach the
-container with `docker network inspect <network>`, and prefer that subnet (e.g. `["172.18.0.0/16"]`) or the fixed
-address of the proxy.
+The variable sets `trustedHosts` of HumHub's request component for web requests only, which is the same as
+`HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS=["172.16.0.0/12"]` (an explicit value takes precedence).
+Do not set it with the usual `HUMHUB_CONFIG__` prefix: that also configures the console application, whose
+request component has no such property, so every `yii` command fails, including the migrations at container
+start, the scheduler and the queue workers. The entrypoint moves such a value to the web configuration for the
+processes it starts and logs a warning, but commands run via `docker exec` still fail until the variable is
+replaced.
 
 > **Security:**
 > Anyone who can reach the container from a trusted address can spoof these headers, e.g. fake the visitor IP
@@ -98,7 +103,7 @@ services:
       - proxy
     environment:
       - SERVER_NAME=:80
-      - HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS=["172.16.0.0/12"]
+      - HUMHUB_DOCKER__TRUSTED_PROXIES=172.16.0.0/12
       - HUMHUB_CONFIG__COMPONENTS__DB__DSN=mysql:host=db;dbname=humhub
       - HUMHUB_CONFIG__COMPONENTS__DB__USERNAME=root
       - HUMHUB_CONFIG__COMPONENTS__DB__PASSWORD=changeMe
@@ -127,8 +132,8 @@ humhub.example.com {
 
 nginx needs the headers set explicitly, and buffering disabled for the Mercure event stream.
 `client_max_body_size` should match the [upload limit](php-configuration.md) of the container.
-`X-Forwarded-Host` is required: without it HumHub falls back to the container's own port and generates URLs
-with `:80`. Keep the `proxy_set_header` directives at `server` level: nginx does not inherit them into a
+`X-Forwarded-Host` carries the public host name and port; the container derives it from `Host` when the proxy
+does not send it. Keep the `proxy_set_header` directives at `server` level: nginx does not inherit them into a
 `location` that sets a `proxy_set_header` of its own.
 
 ```nginx

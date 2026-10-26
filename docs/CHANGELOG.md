@@ -4,6 +4,8 @@ Changelog
 October 26, 2026
 ----------------
 - Enh: Document running behind a reverse proxy that terminates TLS (SERVER_NAME=:80, trusted proxy hosts), so generated URLs use HTTPS
+- Enh: HUMHUB_DOCKER__TRUSTED_PROXIES declares the reverse proxy addresses HumHub trusts for X-Forwarded-* headers (web application only; a HUMHUB_CONFIG__ trusted hosts value is moved to the web configuration with a warning, as it breaks every yii command); notice at startup when SERVER_NAME is plain HTTP and no proxy is trusted
+- Fix: Derive X-Forwarded-Host from the Host header when the proxy does not send it, so generated URLs behind e.g. nginx do not end up with ":80" (FrankenPHP exposes no Host header to getallheaders())
 
 October 23, 2026
 ----------------

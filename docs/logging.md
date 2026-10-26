@@ -123,6 +123,11 @@ that this makes real client IPs (IPv4/IPv6, personal data under GDPR) appear in 
 access log; anonymize or drop them at your proxy, or via a Caddy log filter, per
 your privacy requirements.
 
+This setting only affects Caddy's access log. Whether HumHub itself trusts the
+`X-Forwarded-*` headers (generated URLs, visitor IP in sessions and logs) is
+configured separately with `HUMHUB_DOCKER__TRUSTED_PROXIES`, see
+[Running Behind a Reverse Proxy](reverse-proxy.md).
+
 ### HumHub application log
 
 The file (`/data/logs/app.log`) and database targets are configured by HumHub core

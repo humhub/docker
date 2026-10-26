@@ -134,6 +134,54 @@ EOF
 )"
 
 #----------------------------------------------------------------------
+# Reverse proxy, see docs/reverse-proxy.md
+#----------------------------------------------------------------------
+# HUMHUB_DOCKER__TRUSTED_PROXIES lists the addresses of a reverse proxy that terminates TLS in front
+# of this container (IPs or CIDR ranges separated by comma or space, or "private_ranges"). HumHub then
+# accepts the X-Forwarded-Proto/Host/Port/For headers from these addresses and generates https:// URLs.
+# The setting is applied to the web application only (HUMHUB_WEB_CONFIG__): the console request
+# component has no trustedHosts property, so HUMHUB_CONFIG__ would make every yii command fail and stall
+# the startup migrations, the scheduler and the workers.
+if [ -n "$HUMHUB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS" ]; then
+  echo "WARNING: HUMHUB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS also applies to the console application and breaks every yii command. Using it for the web application only, but commands run via 'docker exec' still fail: replace it with HUMHUB_DOCKER__TRUSTED_PROXIES, see docs/reverse-proxy.md"
+  export HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS="${HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS:-$HUMHUB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS}"
+  unset HUMHUB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS
+fi
+if [ -n "$HUMHUB_DOCKER__TRUSTED_PROXIES" ] && [ -z "$HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS" ]; then
+  _trusted_hosts=""
+  for _proxy in $(echo "$HUMHUB_DOCKER__TRUSTED_PROXIES" | tr ',' ' '); do
+    if [ "$_proxy" = "private_ranges" ]; then
+      _proxy="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 127.0.0.0/8 fc00::/7 ::1/128"
+    fi
+    for _range in $_proxy; do
+      _trusted_hosts="${_trusted_hosts:+$_trusted_hosts, }\"$_range\""
+    done
+  done
+  export HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS="[$_trusted_hosts]"
+fi
+
+# Hint when the container serves plain HTTP (TLS terminated elsewhere) but trusts no proxy
+case "${SERVER_NAME%%,*}" in
+  http://*|:*|*:80)
+    if [ -z "$HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS" ]; then
+      echo "NOTICE: SERVER_NAME=$SERVER_NAME serves plain HTTP but no reverse proxy is trusted, so generated URLs use http://. If TLS is terminated by a reverse proxy, set HUMHUB_DOCKER__TRUSTED_PROXIES, see docs/reverse-proxy.md"
+    fi
+    ;;
+esac
+
+# HumHub takes the public host name from X-Forwarded-Host. FrankenPHP exposes no Host header to PHP's
+# getallheaders(), so without it Yii falls back to SERVER_NAME plus the container port and generates
+# URLs with ":80". Derive it from the Host header for proxies that do not send it (e.g. nginx with only
+# "Host" set). Harmless otherwise: HumHub drops the header unless the peer is a trusted proxy.
+export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
+
+  # Reverse proxy: X-Forwarded-Host fallback, see docs/reverse-proxy.md
+  @no_forwarded_host not header X-Forwarded-Host *
+  request_header @no_forwarded_host X-Forwarded-Host {http.request.hostport}
+EOF
+)"
+
+#----------------------------------------------------------------------
 # Enable Mercure
 #----------------------------------------------------------------------
 if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then

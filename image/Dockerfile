@@ -120,6 +120,11 @@ ENV HUMHUB_DOCKER=true \
 # Set it to probe another address or path instead, see docs/healthcheck.md
 ENV HUMHUB_DOCKER__HEALTHCHECK_URL=
 
+# Addresses of a reverse proxy that terminates TLS in front of the container (IPs or CIDR ranges separated
+# by comma or space, or "private_ranges"). HumHub accepts the X-Forwarded-* headers from these addresses.
+# Empty (the default): no proxy is trusted, see docs/reverse-proxy.md
+ENV HUMHUB_DOCKER__TRUSTED_PROXIES=
+
 # Build metadata for HumHub, available as Yii::$app->params['docker'][...] (camelCase keys)
 ENV HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_REVISION="${IMAGE_REVISION}" \
     HUMHUB_CONFIG__PARAMS__DOCKER__IMAGE_CREATED="${IMAGE_CREATED}" \
