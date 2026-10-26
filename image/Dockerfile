@@ -48,6 +48,9 @@ RUN install-php-extensions \
 
 COPY --from=builder /app /app
 
+# --- PHP defaults (overrides: see docs/php-configuration.md) ---
+COPY files/php-humhub.ini /usr/local/etc/php/conf.d/50-humhub.ini
+
 # --- Supervisor config ---
 COPY files/supervisord.conf /etc/supervisor/conf.d/humhub.conf
 
