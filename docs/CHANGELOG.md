@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 26, 2026
+----------------
+- Enh: Document running behind a reverse proxy that terminates TLS (SERVER_NAME=:80, trusted proxy hosts), so generated URLs use HTTPS
+
 October 23, 2026
 ----------------
 - Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
