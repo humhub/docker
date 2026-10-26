@@ -134,21 +134,6 @@ EOF
 )"
 
 #----------------------------------------------------------------------
-# FrankenPHP: PHP Defaults
-#----------------------------------------------------------------------
-export FRANKENPHP_CONFIG+="$(cat <<'EOF'
-       # Default PHP INI
-       php_ini upload_max_filesize 1G
-       php_ini post_max_size 1G
-       php_ini max_input_time 600
-       php_ini max_execution_time 600
-       php_ini log_errors On
-       php_ini display_errors Off
-
-EOF
-)"
-
-#----------------------------------------------------------------------
 # Enable Mercure
 #----------------------------------------------------------------------
 if [ "${HUMHUB_DOCKER__MERCURE_ENABLE}" = "true" ]; then
