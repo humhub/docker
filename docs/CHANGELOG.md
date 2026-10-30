@@ -1,6 +1,10 @@
 Changelog
 =========
 
+October 30, 2026
+----------------
+- Enh: Document TLS configuration (automatic, own and self-signed certificates, internal CA) and Docker-specific reverse proxy pitfalls
+
 October 23, 2026
 ----------------
 - Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
