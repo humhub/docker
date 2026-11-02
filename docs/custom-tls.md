@@ -135,13 +135,15 @@ examples are described in the [HumHub reverse proxy documentation](https://docs.
 Pitfalls specific to the Docker image:
 
 - **Trusted hosts via environment variable:** use the `HUMHUB_WEB_CONFIG__` prefix. With `HUMHUB_CONFIG__`, every
-  `yii` command fails, and scheduler and workers wait forever with `HumHub not installed yet`. In the compose list
-  syntax, write the value without quotes:
+  `yii` command fails, and scheduler and workers wait forever with `HumHub not installed yet`. Write the value
+  without quotes:
   ```yaml
       environment:
         - HUMHUB_WEB_CONFIG__COMPONENTS__REQUEST__TRUSTED_HOSTS=["172.18.0.0/16"]
   ```
-  Single quotes (`='[...]'`) become part of the value and cause HTTP 500 errors.
+  This works in the compose `environment` list, in `env_file` files and with `docker run --env-file`. Only
+  `env_file` removes quotes. Elsewhere, single quotes (`='[...]'`) become part of the value and cause HTTP 500
+  errors.
 - **Re-encrypt:** the proxy must send the host name as SNI and keep the original `Host` header, otherwise it
   reports `tls: internal error` (no SNI) or HumHub answers with an empty page (wrong `Host`).
 - **Visitor IP:** HumHub sees the proxy as client until the proxy is a trusted host. Which address that is
