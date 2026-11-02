@@ -1,8 +1,12 @@
 # TLS Configuration
 
 The container terminates TLS itself, using [Caddy](https://caddyserver.com), the web server inside
-[FrankenPHP](https://frankenphp.dev). The `SERVER_NAME` variable sets the host name, and the certificate source is
-selected per section below.
+[FrankenPHP](https://frankenphp.dev). The `SERVER_NAME` variable sets the host name. The certificate comes from
+one of three sources:
+
+- [Automatic certificates](#automatic-certificates-default) and the [internal CA](#internal-ca) are provided
+  directly by the image. They need no certificate files, are renewed automatically and suit most setups.
+- [Own certificates](#own-certificate) are only needed if you have to use certificates from another source.
 
 Host paths refer to the [Quick Start](../README.md#quick-start) bind mount `./humhub-data:/data`:
 `humhub-data/...` on the host is `/data/...` in the container. The examples only show the relevant parts of the
@@ -35,6 +39,29 @@ Requirements:
 - Ports 80 and 443 are reachable from the internet (ACME challenges).
 - `humhub-data` is persistent. Caddy stores certificates, keys and ACME account in `humhub-data/caddy/`. Without
   it, every new container requests new certificates and can run into the Let's Encrypt rate limits.
+
+## Internal CA
+
+Caddy issues certificates from its own local CA, e.g. for test setups or as the backend of a reverse proxy.
+
+Configuration:
+
+- `SERVER_NAME=humhub.example.com`
+- `CADDY_SERVER_EXTRA_DIRECTIVES=tls internal`
+
+```yaml
+    environment:
+      - SERVER_NAME=humhub.example.com
+      - CADDY_SERVER_EXTRA_DIRECTIVES=tls internal
+```
+
+Server certificates are short-lived and renewed automatically. Clients that should trust them import the root
+certificate `humhub-data/caddy/pki/authorities/local/root.crt`. It stays the same as long as `humhub-data/caddy`
+is kept.
+
+The [backup script](backup-restore.md) of the image does not include `humhub-data/caddy/`. Back up
+`humhub-data/caddy/pki/` separately, otherwise a restore creates a new root certificate, and clients and reverse
+proxies that trust the old one have to import the new one.
 
 ## Own certificate
 
@@ -97,29 +124,6 @@ docker compose restart humhub
 > Do not run `frankenphp reload` inside the container. It loads the new certificate, but the reloaded
 > configuration lacks the settings the image generates at startup (e.g. access protection for
 > `/uploads/file`, live updates, logging).
-
-## Internal CA
-
-Caddy issues certificates from its own local CA, e.g. for test setups or as the backend of a reverse proxy.
-
-Configuration:
-
-- `SERVER_NAME=humhub.example.com`
-- `CADDY_SERVER_EXTRA_DIRECTIVES=tls internal`
-
-```yaml
-    environment:
-      - SERVER_NAME=humhub.example.com
-      - CADDY_SERVER_EXTRA_DIRECTIVES=tls internal
-```
-
-Server certificates are short-lived and renewed automatically. Clients that should trust them import the root
-certificate `humhub-data/caddy/pki/authorities/local/root.crt`. It stays the same as long as `humhub-data/caddy`
-is kept.
-
-The [backup script](backup-restore.md) of the image does not include `humhub-data/caddy/`. Back up
-`humhub-data/caddy/pki/` separately, otherwise a restore creates a new root certificate, and clients and reverse
-proxies that trust the old one have to import the new one.
 
 ## Behind a reverse proxy
 
