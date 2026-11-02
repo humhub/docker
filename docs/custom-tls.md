@@ -144,5 +144,5 @@ Pitfalls specific to the Docker image:
   Single quotes (`='[...]'`) become part of the value and cause HTTP 500 errors.
 - **Re-encrypt:** the proxy must send the host name as SNI and keep the original `Host` header, otherwise it
   reports `tls: internal error` (no SNI) or HumHub answers with an empty page (wrong `Host`).
-- **Visitor IP:** HumHub sees the proxy as client until the proxy is a trusted host. For the access log, see
-  [Logging](logging.md#client-ip-behind-a-reverse-proxy).
+- **Visitor IP:** HumHub sees the proxy as client until the proxy is a trusted host. Which address that is
+  depends on the network setup, see [Logging](logging.md#client-ip-behind-a-reverse-proxy).

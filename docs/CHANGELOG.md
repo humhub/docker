@@ -1,9 +1,10 @@
 Changelog
 =========
 
-October 30, 2026
+November 2, 2026
 ----------------
 - Enh: Document TLS configuration (automatic, own and self-signed certificates, internal CA) and Docker-specific reverse proxy pitfalls
+- Enh: Document which client address Caddy and HumHub see per network setup and which address to trust
 
 October 23, 2026
 ----------------
