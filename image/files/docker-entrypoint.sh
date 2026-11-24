@@ -67,6 +67,12 @@ export HUMHUB_CONFIG__MODULES__INSTALLER__ENABLE_AUTO_SETUP="$AUTO_SETUP"
 export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
   # Forbidden Directories
   respond /uploads/file/* 403
+
+  # FrankenPHP omits Host from getallheaders(), so Yii builds URLs from SERVER_NAME and SERVER_PORT
+  # (e.g. https://host:80 behind a TLS-terminating proxy). Pass Host as X-Forwarded-Host if the proxy
+  # did not send one. Yii only uses it from trusted hosts.
+  @noForwardedHost header !X-Forwarded-Host
+  request_header @noForwardedHost X-Forwarded-Host {http.request.hostport}
 EOF
 )"
 

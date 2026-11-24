@@ -146,5 +146,7 @@ Pitfalls specific to the Docker image:
   errors.
 - **Re-encrypt:** the proxy must send the host name as SNI and keep the original `Host` header, otherwise it
   reports `tls: internal error` (no SNI) or HumHub answers with an empty page (wrong `Host`).
+- **Missing `X-Forwarded-Host`:** FrankenPHP does not pass the `Host` header to HumHub. If the proxy does not send
+  `X-Forwarded-Host`, the image sets it from `Host`, so URLs do not end up with `:80`.
 - **Visitor IP:** HumHub sees the proxy as client until the proxy is a trusted host. Which address that is
   depends on the network setup, see [Logging](logging.md#client-ip-behind-a-reverse-proxy).
