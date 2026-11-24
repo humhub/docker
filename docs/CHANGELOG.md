@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+November 24, 2026
+-----------------
 - Fix: Set X-Forwarded-Host from Host if the proxy does not send it, so URLs behind a TLS-terminating proxy no longer contain `:80` (FrankenPHP omits Host from `getallheaders()`)
 
 November 2, 2026
