@@ -100,7 +100,7 @@ Your instance installer will be available at:
 - [Additional PHP Extensions](docs/php-extensions.md)
 - [Running Without Docker Compose](docs/manual-run.md)
 - [Redis Integration](docs/redis.md)
-- [Custom TLS Settings](docs/custom-tls.md)
+- [TLS Configuration](docs/custom-tls.md)
 - [Custom robots.txt](docs/robots-txt.md)
 - [Health check](docs/healthcheck.md)
 - [Logging](docs/logging.md)

@@ -63,6 +63,15 @@ export HUMHUB_CONFIG__MODULES__INSTALLER__ENABLE_AUTO_SETUP="$AUTO_SETUP"
 #----------------------------------------------------------------------
 # Caddy: Configuration
 #----------------------------------------------------------------------
+export CADDY_SERVER_EXTRA_DIRECTIVES+="$(cat <<'EOF'
+  # FrankenPHP omits Host from getallheaders(), so Yii builds URLs from SERVER_NAME and SERVER_PORT
+  # (e.g. https://host:80 behind a TLS-terminating proxy). Pass Host as X-Forwarded-Host if the proxy
+  # did not send one. Yii only uses it from trusted hosts.
+  @noForwardedHost header !X-Forwarded-Host
+  request_header @noForwardedHost X-Forwarded-Host {http.request.hostport}
+EOF
+)"
+
 #--- Logging: server runtime/error log (Caddy default logger), see docs/logging.md
 if [ "$HUMHUB_DOCKER__SERVER_LOG" != "true" ]; then
   _server_log_output="output discard"

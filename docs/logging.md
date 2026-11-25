@@ -104,6 +104,24 @@ the `X-Forwarded-For` header. The image does **not** trust that header by defaul
 surfacing (and where required anonymizing) real client IPs is a data-privacy
 decision left to the reverse-proxy operator.
 
+The peer address (`remote_ip` in the access log, `REMOTE_ADDR` in HumHub) depends on
+how the container is reached:
+
+| Setup | Peer address |
+|---|---|
+| Proxy container on a shared Docker network | IP of the proxy container in that network |
+| Proxy on the host, port published on loopback (`127.0.0.1:8080:80`) | Gateway of the container's network |
+| Port published on all interfaces, client connects via IPv4 | Real client IP |
+| Same, but client connects via IPv6, or another container connects via the host IP | Gateway of the container's network |
+| Docker Desktop (macOS/Windows), not tested | A gateway or VM address |
+
+`docker network inspect <network>` shows subnet, gateway and container IPs. Or
+enable the access log and check `remote_ip`.
+
+Trust the narrowest possible range, ideally only the proxy, or the subnet of a
+network that only proxy and HumHub share. A broad range such as `private_ranges`
+also trusts other containers and, via the gateway, any process on the host.
+
 To have Caddy derive the client IP from `X-Forwarded-For`, set the base image's
 `CADDY_GLOBAL_OPTIONS` variable (mapping syntax keeps the multi-line value):
 
@@ -118,9 +136,14 @@ services:
         }
 ```
 
-Replace `private_ranges` with your proxy's IP/CIDR to trust only that source. Note
-that this makes real client IPs (IPv4/IPv6, personal data under GDPR) appear in the
-access log; anonymize or drop them at your proxy, or via a Caddy log filter, per
+Replace `private_ranges` with your proxy's address or range (see above). This only
+affects the access log. HumHub has its own trusted hosts setting for generated URLs
+and the visitor IP (see [TLS Configuration](custom-tls.md#behind-a-reverse-proxy)
+and the [HumHub reverse proxy documentation](https://docs.humhub.org/docs/admin/reverse-proxy)).
+Behind a proxy, both usually need the same address.
+
+Note that the Caddy setting makes real client IPs (IPv4/IPv6, personal data under
+GDPR) appear in the access log; anonymize or drop them at your proxy, or via a Caddy log filter, per
 your privacy requirements.
 
 ### HumHub application log

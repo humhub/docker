@@ -1,6 +1,15 @@
 Changelog
 =========
 
+November 24, 2026
+-----------------
+- Fix: Set X-Forwarded-Host from Host if the proxy does not send it, so URLs behind a TLS-terminating proxy no longer contain `:80` (FrankenPHP omits Host from `getallheaders()`)
+
+November 2, 2026
+----------------
+- Enh: Document TLS configuration (automatic, own and self-signed certificates, internal CA) and Docker-specific reverse proxy pitfalls
+- Enh: Document which client address Caddy and HumHub see per network setup and which address to trust
+
 October 23, 2026
 ----------------
 - Fix: Derive the healthcheck URL from SERVER_NAME so plain HTTP and custom hosts or ports report healthy; override via HUMHUB_DOCKER__HEALTHCHECK_URL
