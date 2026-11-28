@@ -1,6 +1,10 @@
 Changelog
 =========
 
+November 28, 2026
+-----------------
+- Enh: Include ffmpeg and ffprobe for video and audio files (dimensions, duration, the audio track for speech recognition); set through `HUMHUB_CONFIG__MODULES__FILE__FFPROBE_PATH` and `HUMHUB_CONFIG__MODULES__FILE__FFMPEG_PATH` (requires HumHub 1.20, humhub/humhub#8797 and humhub/humhub#8803)
+
 November 24, 2026
 -----------------
 - Fix: Set X-Forwarded-Host from Host if the proxy does not send it, so URLs behind a TLS-terminating proxy no longer contain `:80` (FrankenPHP omits Host from `getallheaders()`)

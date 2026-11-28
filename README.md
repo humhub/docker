@@ -104,6 +104,7 @@ Your instance installer will be available at:
 - [Custom robots.txt](docs/robots-txt.md)
 - [Health check](docs/healthcheck.md)
 - [Logging](docs/logging.md)
+- [Video and Audio Files (ffmpeg)](docs/video-audio.md)
 - [Development](docs/development.md)
 
 ---

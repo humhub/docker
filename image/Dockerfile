@@ -28,6 +28,10 @@ USER root
 #RUN apt-get update && apt-get install -y supervisor bash && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y supervisor bash procps joe mariadb-client
 
+# ffmpeg and ffprobe for video and audio files: their dimensions and duration, and the audio track for speech
+# recognition (e.g. subtitles created by AI), see docs/video-audio.md
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Extensions needed by HumHub core, plus small ones commonly needed by modules
@@ -93,6 +97,8 @@ ENV HUMHUB_DOCKER=true \
     HUMHUB_ALIASES__LOGS=/data/logs \
     HUMHUB_ALIASES__THEMES=/data/themes \
     HUMHUB_CONFIG__COMPONENTS__FS__MOUNTS__DATA__PATH=/data/uploads \
+    HUMHUB_CONFIG__MODULES__FILE__FFPROBE_PATH=/usr/bin/ffprobe \
+    HUMHUB_CONFIG__MODULES__FILE__FFMPEG_PATH=/usr/bin/ffmpeg \
     HUMHUB_DOCKER__AUTOSTART_FRANKENPHP=true \
     HUMHUB_DOCKER__AUTOSTART_SCHEDULER=true \
     HUMHUB_DOCKER__AUTOSTART_WORKER=true \
